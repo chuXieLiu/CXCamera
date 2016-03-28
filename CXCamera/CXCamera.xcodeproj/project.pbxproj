@@ -15,12 +15,16 @@
 		F93DC6401CA609D900F9D448 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F93DC63E1CA609D900F9D448 /* LaunchScreen.storyboard */; };
 		F93DC64B1CA609D900F9D448 /* CXCameraTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F93DC64A1CA609D900F9D448 /* CXCameraTests.m */; };
 		F93DC65C1CA60A6B00F9D448 /* CXCameraManager.m in Sources */ = {isa = PBXBuildFile; fileRef = F93DC65B1CA60A6B00F9D448 /* CXCameraManager.m */; };
-		F93DC6631CA60BB300F9D448 /* AVAsset+Extension.m in Sources */ = {isa = PBXBuildFile; fileRef = F93DC65E1CA60BB300F9D448 /* AVAsset+Extension.m */; };
-		F93DC6641CA60BB300F9D448 /* NSTimer+Extension.m in Sources */ = {isa = PBXBuildFile; fileRef = F93DC6601CA60BB300F9D448 /* NSTimer+Extension.m */; };
-		F93DC6651CA60BB300F9D448 /* UIView+Extension.m in Sources */ = {isa = PBXBuildFile; fileRef = F93DC6621CA60BB300F9D448 /* UIView+Extension.m */; };
 		F9D2D6BA1CA6336B00B00969 /* CXCameraViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F9D2D6B91CA6336B00B00969 /* CXCameraViewController.m */; };
-		F9D2D6BC1CA6337900B00969 /* CXCameraViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F9D2D6BB1CA6337900B00969 /* CXCameraViewController.storyboard */; };
 		F9D2D6BF1CA6346900B00969 /* CXShutterButton.m in Sources */ = {isa = PBXBuildFile; fileRef = F9D2D6BE1CA6346900B00969 /* CXShutterButton.m */; };
+		F9ED86231CA8D952007001E8 /* NSString+CXExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = F9ED86221CA8D952007001E8 /* NSString+CXExtension.m */; };
+		F9ED86261CA8D97C007001E8 /* AVAsset+CXExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = F9ED86251CA8D97C007001E8 /* AVAsset+CXExtension.m */; };
+		F9ED86291CA8D992007001E8 /* NSTimer+CXExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = F9ED86281CA8D992007001E8 /* NSTimer+CXExtension.m */; };
+		F9ED862C1CA8D9A4007001E8 /* UIView+CXExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = F9ED862B1CA8D9A4007001E8 /* UIView+CXExtension.m */; };
+		F9ED862F1CA90532007001E8 /* CXPreviewView.m in Sources */ = {isa = PBXBuildFile; fileRef = F9ED862E1CA90532007001E8 /* CXPreviewView.m */; };
+		F9ED86321CA90761007001E8 /* CXOverlayView.m in Sources */ = {isa = PBXBuildFile; fileRef = F9ED86311CA90761007001E8 /* CXOverlayView.m */; };
+		F9ED863B1CA925ED007001E8 /* CXCameraView.m in Sources */ = {isa = PBXBuildFile; fileRef = F9ED863A1CA925ED007001E8 /* CXCameraView.m */; };
+		F9ED863F1CA92978007001E8 /* CXCommonConst.m in Sources */ = {isa = PBXBuildFile; fileRef = F9ED863E1CA92978007001E8 /* CXCommonConst.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,17 +53,26 @@
 		F93DC64C1CA609D900F9D448 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F93DC65A1CA60A6B00F9D448 /* CXCameraManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CXCameraManager.h; sourceTree = "<group>"; };
 		F93DC65B1CA60A6B00F9D448 /* CXCameraManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CXCameraManager.m; sourceTree = "<group>"; };
-		F93DC65D1CA60BB300F9D448 /* AVAsset+Extension.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "AVAsset+Extension.h"; sourceTree = "<group>"; };
-		F93DC65E1CA60BB300F9D448 /* AVAsset+Extension.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "AVAsset+Extension.m"; sourceTree = "<group>"; };
-		F93DC65F1CA60BB300F9D448 /* NSTimer+Extension.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSTimer+Extension.h"; sourceTree = "<group>"; };
-		F93DC6601CA60BB300F9D448 /* NSTimer+Extension.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSTimer+Extension.m"; sourceTree = "<group>"; };
-		F93DC6611CA60BB300F9D448 /* UIView+Extension.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Extension.h"; sourceTree = "<group>"; };
-		F93DC6621CA60BB300F9D448 /* UIView+Extension.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Extension.m"; sourceTree = "<group>"; };
 		F9D2D6B81CA6336B00B00969 /* CXCameraViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CXCameraViewController.h; sourceTree = "<group>"; };
 		F9D2D6B91CA6336B00B00969 /* CXCameraViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CXCameraViewController.m; sourceTree = "<group>"; };
-		F9D2D6BB1CA6337900B00969 /* CXCameraViewController.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = CXCameraViewController.storyboard; sourceTree = "<group>"; };
 		F9D2D6BD1CA6346900B00969 /* CXShutterButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CXShutterButton.h; sourceTree = "<group>"; };
 		F9D2D6BE1CA6346900B00969 /* CXShutterButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CXShutterButton.m; sourceTree = "<group>"; };
+		F9ED86211CA8D952007001E8 /* NSString+CXExtension.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+CXExtension.h"; sourceTree = "<group>"; };
+		F9ED86221CA8D952007001E8 /* NSString+CXExtension.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+CXExtension.m"; sourceTree = "<group>"; };
+		F9ED86241CA8D97C007001E8 /* AVAsset+CXExtension.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "AVAsset+CXExtension.h"; sourceTree = "<group>"; };
+		F9ED86251CA8D97C007001E8 /* AVAsset+CXExtension.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "AVAsset+CXExtension.m"; sourceTree = "<group>"; };
+		F9ED86271CA8D992007001E8 /* NSTimer+CXExtension.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSTimer+CXExtension.h"; sourceTree = "<group>"; };
+		F9ED86281CA8D992007001E8 /* NSTimer+CXExtension.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSTimer+CXExtension.m"; sourceTree = "<group>"; };
+		F9ED862A1CA8D9A4007001E8 /* UIView+CXExtension.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+CXExtension.h"; sourceTree = "<group>"; };
+		F9ED862B1CA8D9A4007001E8 /* UIView+CXExtension.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+CXExtension.m"; sourceTree = "<group>"; };
+		F9ED862D1CA90532007001E8 /* CXPreviewView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CXPreviewView.h; sourceTree = "<group>"; };
+		F9ED862E1CA90532007001E8 /* CXPreviewView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CXPreviewView.m; sourceTree = "<group>"; };
+		F9ED86301CA90761007001E8 /* CXOverlayView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CXOverlayView.h; sourceTree = "<group>"; };
+		F9ED86311CA90761007001E8 /* CXOverlayView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CXOverlayView.m; sourceTree = "<group>"; };
+		F9ED86391CA925ED007001E8 /* CXCameraView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CXCameraView.h; sourceTree = "<group>"; };
+		F9ED863A1CA925ED007001E8 /* CXCameraView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CXCameraView.m; sourceTree = "<group>"; };
+		F9ED863D1CA92978007001E8 /* CXCommonConst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CXCommonConst.h; sourceTree = "<group>"; };
+		F9ED863E1CA92978007001E8 /* CXCommonConst.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CXCommonConst.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -135,6 +148,7 @@
 		F93DC6551CA60A1E00F9D448 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				F9ED863C1CA92950007001E8 /* Other */,
 				F93DC6561CA60A1E00F9D448 /* Category */,
 				F93DC6571CA60A1E00F9D448 /* Controller */,
 				F93DC6581CA60A1E00F9D448 /* Model */,
@@ -146,12 +160,14 @@
 		F93DC6561CA60A1E00F9D448 /* Category */ = {
 			isa = PBXGroup;
 			children = (
-				F93DC65D1CA60BB300F9D448 /* AVAsset+Extension.h */,
-				F93DC65E1CA60BB300F9D448 /* AVAsset+Extension.m */,
-				F93DC65F1CA60BB300F9D448 /* NSTimer+Extension.h */,
-				F93DC6601CA60BB300F9D448 /* NSTimer+Extension.m */,
-				F93DC6611CA60BB300F9D448 /* UIView+Extension.h */,
-				F93DC6621CA60BB300F9D448 /* UIView+Extension.m */,
+				F9ED86211CA8D952007001E8 /* NSString+CXExtension.h */,
+				F9ED86221CA8D952007001E8 /* NSString+CXExtension.m */,
+				F9ED86241CA8D97C007001E8 /* AVAsset+CXExtension.h */,
+				F9ED86251CA8D97C007001E8 /* AVAsset+CXExtension.m */,
+				F9ED86271CA8D992007001E8 /* NSTimer+CXExtension.h */,
+				F9ED86281CA8D992007001E8 /* NSTimer+CXExtension.m */,
+				F9ED862A1CA8D9A4007001E8 /* UIView+CXExtension.h */,
+				F9ED862B1CA8D9A4007001E8 /* UIView+CXExtension.m */,
 			);
 			path = Category;
 			sourceTree = "<group>";
@@ -163,7 +179,6 @@
 				F93DC65B1CA60A6B00F9D448 /* CXCameraManager.m */,
 				F9D2D6B81CA6336B00B00969 /* CXCameraViewController.h */,
 				F9D2D6B91CA6336B00B00969 /* CXCameraViewController.m */,
-				F9D2D6BB1CA6337900B00969 /* CXCameraViewController.storyboard */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -180,8 +195,23 @@
 			children = (
 				F9D2D6BD1CA6346900B00969 /* CXShutterButton.h */,
 				F9D2D6BE1CA6346900B00969 /* CXShutterButton.m */,
+				F9ED86391CA925ED007001E8 /* CXCameraView.h */,
+				F9ED863A1CA925ED007001E8 /* CXCameraView.m */,
+				F9ED862D1CA90532007001E8 /* CXPreviewView.h */,
+				F9ED862E1CA90532007001E8 /* CXPreviewView.m */,
+				F9ED86301CA90761007001E8 /* CXOverlayView.h */,
+				F9ED86311CA90761007001E8 /* CXOverlayView.m */,
 			);
 			path = View;
+			sourceTree = "<group>";
+		};
+		F9ED863C1CA92950007001E8 /* Other */ = {
+			isa = PBXGroup;
+			children = (
+				F9ED863D1CA92978007001E8 /* CXCommonConst.h */,
+				F9ED863E1CA92978007001E8 /* CXCommonConst.m */,
+			);
+			path = Other;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -266,7 +296,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				F93DC6401CA609D900F9D448 /* LaunchScreen.storyboard in Resources */,
-				F9D2D6BC1CA6337900B00969 /* CXCameraViewController.storyboard in Resources */,
 				F93DC63D1CA609D900F9D448 /* Assets.xcassets in Resources */,
 				F93DC63B1CA609D900F9D448 /* Main.storyboard in Resources */,
 			);
@@ -288,12 +317,17 @@
 			files = (
 				F93DC6381CA609D900F9D448 /* ViewController.m in Sources */,
 				F9D2D6BF1CA6346900B00969 /* CXShutterButton.m in Sources */,
+				F9ED863F1CA92978007001E8 /* CXCommonConst.m in Sources */,
+				F9ED86321CA90761007001E8 /* CXOverlayView.m in Sources */,
+				F9ED86261CA8D97C007001E8 /* AVAsset+CXExtension.m in Sources */,
+				F9ED862F1CA90532007001E8 /* CXPreviewView.m in Sources */,
 				F93DC6351CA609D900F9D448 /* AppDelegate.m in Sources */,
 				F93DC6321CA609D900F9D448 /* main.m in Sources */,
-				F93DC6651CA60BB300F9D448 /* UIView+Extension.m in Sources */,
-				F93DC6631CA60BB300F9D448 /* AVAsset+Extension.m in Sources */,
-				F93DC6641CA60BB300F9D448 /* NSTimer+Extension.m in Sources */,
+				F9ED862C1CA8D9A4007001E8 /* UIView+CXExtension.m in Sources */,
 				F9D2D6BA1CA6336B00B00969 /* CXCameraViewController.m in Sources */,
+				F9ED86291CA8D992007001E8 /* NSTimer+CXExtension.m in Sources */,
+				F9ED86231CA8D952007001E8 /* NSString+CXExtension.m in Sources */,
+				F9ED863B1CA925ED007001E8 /* CXCameraView.m in Sources */,
 				F93DC65C1CA60A6B00F9D448 /* CXCameraManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

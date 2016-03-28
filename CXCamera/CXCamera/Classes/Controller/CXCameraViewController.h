@@ -10,6 +10,5 @@
 
 @interface CXCameraViewController : UIViewController
 
-+ (instancetype)cameraViewController;
 
 @end

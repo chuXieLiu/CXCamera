@@ -1,8 +1,8 @@
 //
-//  NSTimer+Extension.h
+//  NSTimer+CXExtension.h
 //  CXCamera
 //
-//  Created by c_xie on 16/3/24.
+//  Created by c_xie on 16/3/28.
 //  Copyright © 2016年 CX. All rights reserved.
 //
 
@@ -10,8 +10,7 @@
 
 typedef void(^CXTimerFireBlock)();
 
-@interface NSTimer (Extension)
-
+@interface NSTimer (CXExtension)
 
 /**
  *  创建不重复执行定时器
@@ -19,7 +18,7 @@ typedef void(^CXTimerFireBlock)();
  *  @param seconds 执行时间段
  *  @param block   回调块
  *
- *  @return 
+ *  @return
  */
 + (instancetype)scheduledTimerWithTimeInterval:(NSTimeInterval)seconds
                                      fireBlock:(CXTimerFireBlock)block;

@@ -1,15 +1,14 @@
 //
-//  NSTimer+Extension.m
+//  NSTimer+CXExtension.m
 //  CXCamera
 //
-//  Created by c_xie on 16/3/24.
+//  Created by c_xie on 16/3/28.
 //  Copyright © 2016年 CX. All rights reserved.
 //
 
-#import "NSTimer+Extension.h"
+#import "NSTimer+CXExtension.h"
 
-
-@implementation NSTimer (Extension)
+@implementation NSTimer (CXExtension)
 
 /**
  *  创建不重复执行定时器

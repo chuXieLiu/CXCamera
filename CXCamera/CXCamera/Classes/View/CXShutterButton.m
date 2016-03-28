@@ -7,10 +7,7 @@
 //
 
 #import "CXShutterButton.h"
-#import "UIView+Extension.h"
-
-static const CGFloat kCXShutterButtonWidth = 68.0f;
-static const CGFloat kCXShutterButtonHeight = 68.0f;
+#import "UIView+CXExtension.h"
 
 static const CGFloat kCXShutterButtonLineWidth = 6.0f;
 
@@ -25,6 +22,16 @@ static const CGFloat kCXShuterButtonAnimationDuration = 0.2f;
 
 @implementation CXShutterButton
 
+- (instancetype)initWithMode:(CXShutterButtonMode)mode
+{
+    self = [super init];
+    if (self) {
+        _shutterButtonMode = mode;
+        [self setup];
+    }
+    return self;
+}
+
 - (instancetype)initWithFrame:(CGRect)frame
 {
     frame.size.width = kCXShutterButtonWidth;
@@ -38,7 +45,6 @@ static const CGFloat kCXShuterButtonAnimationDuration = 0.2f;
 
 - (void)awakeFromNib
 {
-    _shutterButtonMode = CXShutterButtonModeVideo;
     [self setup];
 }
 

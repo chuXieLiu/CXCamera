@@ -7,14 +7,14 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "CXCommonConst.h"
 
-typedef enum : NSUInteger {
-    CXShutterButtonModePhoto,
-    CXShutterButtonModeVideo,
-} CXShutterButtonMode;
+
 
 @interface CXShutterButton : UIButton
 
 @property (nonatomic,assign) CXShutterButtonMode shutterButtonMode;
+
+- (instancetype)initWithMode:(CXShutterButtonMode)mode;
 
 @end

@@ -22,7 +22,7 @@
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
-    CXCameraViewController *cameraVC = [CXCameraViewController cameraViewController];
+    CXCameraViewController *cameraVC = [[CXCameraViewController alloc] init];
     cameraVC.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
     [self presentViewController:cameraVC animated:NO completion:nil];
 }

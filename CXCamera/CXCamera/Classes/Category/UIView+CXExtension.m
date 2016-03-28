@@ -1,14 +1,14 @@
 //
-//  UIView+Extension.m
+//  UIView+CXExtension.m
 //  CXCamera
 //
-//  Created by c_xie on 16/3/23.
+//  Created by c_xie on 16/3/28.
 //  Copyright © 2016年 CX. All rights reserved.
 //
 
-#import "UIView+Extension.h"
+#import "UIView+CXExtension.h"
 
-@implementation UIView (Extension)
+@implementation UIView (CXExtension)
 
 - (void)setLeft:(CGFloat)left
 {
@@ -191,6 +191,5 @@
 {
     return [[NSBundle mainBundle] loadNibNamed:NSStringFromClass(self) owner:nil options:nil].lastObject;
 }
-
 
 @end

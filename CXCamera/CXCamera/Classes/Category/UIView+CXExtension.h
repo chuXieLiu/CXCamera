@@ -1,14 +1,14 @@
 //
-//  UIView+Extension.h
+//  UIView+CXExtension.h
 //  CXCamera
 //
-//  Created by c_xie on 16/3/23.
+//  Created by c_xie on 16/3/28.
 //  Copyright © 2016年 CX. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
 
-@interface UIView (Extension)
+@interface UIView (CXExtension)
 
 @property (nonatomic,assign) CGFloat left;
 @property (nonatomic,assign) CGFloat right;
@@ -34,7 +34,7 @@
  *
  *  @param size
  *
- *  @return 
+ *  @return
  */
 - (UIImage *)renderImageWithSize:(CGSize)size;
 
@@ -53,13 +53,5 @@
  *  @return
  */
 + (instancetype)viewFromXib;
-
-
-
-
-
-
-
-
 
 @end

@@ -8,39 +8,74 @@
 
 #import "CXCameraViewController.h"
 #import "CXShutterButton.h"
+#import "CXCameraManager.h"
+#import "CXPreviewView.h"
+#import "CXCameraView.h"
 
 @interface CXCameraViewController ()
+<
+    CXCameraManagerDelegate
+>
 
 @property (weak, nonatomic) IBOutlet CXShutterButton *shutterButton;
+
+@property (weak, nonatomic) IBOutlet CXPreviewView *previewView;
+
+@property (nonatomic,strong) CXCameraManager *cameraManager;
+
+
+
+@property (nonatomic,weak) CXPreviewView *preview;
+
+@property (nonatomic,weak) CXOverlayView *overlay;
 
 @end
 
 @implementation CXCameraViewController
 
+- (void)loadView
+{
+    CXCameraView *cameraView = [[CXCameraView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    self.view = cameraView;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = [UIColor redColor];
+
 }
+
+
 
 - (IBAction)shutter:(CXShutterButton *)sender {
     if (_shutterButton.shutterButtonMode == CXShutterButtonModePhoto) {
-        _shutterButton.shutterButtonMode = CXShutterButtonModeVideo;
+        [_cameraManager captureStillImage];
     } else {
-        _shutterButton.shutterButtonMode = CXShutterButtonModePhoto;
+        sender.selected = !sender.isSelected;
+        if (sender.isSelected) {
+            dispatch_async(dispatch_get_global_queue(0, 0), ^{
+                [_cameraManager startRecording];
+            });
+        } else {
+            [_cameraManager stopRecording];
+        }
     }
+    
     
 }
 
 
-- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+
+
+
+#pragma mark - CXCameraManagerDelegate
+
+- (void)cameraConfigurateFailed:(NSError *)error
 {
-    _shutterButton.selected = !_shutterButton.isSelected;
+    NSLog(@"%@",[error localizedDescription]);
 }
 
-+ (instancetype)cameraViewController
-{
-    return [UIStoryboard storyboardWithName:NSStringFromClass(self) bundle:nil].instantiateInitialViewController;
-}
+
+
 
 
 
