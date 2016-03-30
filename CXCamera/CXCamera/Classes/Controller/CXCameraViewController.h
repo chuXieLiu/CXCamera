@@ -8,7 +8,14 @@
 
 #import <UIKit/UIKit.h>
 
+typedef enum : NSUInteger {
+    CXCameraModePhoto,
+    CXCameraModeVideo,
+} CXCameraMode;
+
 @interface CXCameraViewController : UIViewController
+
+@property (nonatomic,assign) CXCameraMode cameraMode;
 
 
 @end

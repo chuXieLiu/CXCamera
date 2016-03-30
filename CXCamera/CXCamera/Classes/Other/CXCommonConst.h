@@ -13,8 +13,5 @@ typedef enum : NSUInteger {
     CXShutterButtonModeVideo,
 } CXShutterButtonMode;
 
-// 快门按钮
-UIKIT_EXTERN CGFloat const kCXShutterButtonWidth;
-UIKIT_EXTERN CGFloat const kCXShutterButtonHeight;
 
-UIKIT_EXTERN CGFloat const kCXOverlayModeViewHeight;
+

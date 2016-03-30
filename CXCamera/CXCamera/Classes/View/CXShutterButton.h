@@ -9,8 +9,6 @@
 #import <UIKit/UIKit.h>
 #import "CXCommonConst.h"
 
-
-
 @interface CXShutterButton : UIButton
 
 @property (nonatomic,assign) CXShutterButtonMode shutterButtonMode;

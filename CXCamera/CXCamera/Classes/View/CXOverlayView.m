@@ -2,55 +2,33 @@
 //  CXOverlayView.m
 //  CXCamera
 //
-//  Created by c_xie on 16/3/28.
+//  Created by c_xie on 16/3/29.
 //  Copyright © 2016年 CX. All rights reserved.
 //
 
 #import "CXOverlayView.h"
-#import "CXShutterButton.h"
 #import "UIView+CXExtension.h"
+#import "CXCameraStatusView.h"
+#import "CXFlashPopView.h"
 
+static const CGFloat kCXOverlayStatusViewheight = 44.0f;
+static const CGFloat kCXOverlayModeViewHeight = 110.0f;
 
-@interface CXModeView : UIView
+static const CGFloat kCXShutterButtonWidth = 68.0f;
+static const CGFloat kCXShutterButtonHeight = 68.0f;
 
-@property (nonatomic,weak) CXShutterButton *shutterButton;
-
-@end
-
-@implementation CXModeView
-
-- (instancetype)initWithFrame:(CGRect)frame
-{
-    self = [super initWithFrame:frame];
-    if (self) {
-        [self setup];
-    }
-    return self;
-}
-
-- (void)setup
-{
-    self.backgroundColor = [UIColor blackColor];
-    self.autoresizingMask = UIViewAutoresizingNone;
-    CXShutterButton *shutterButton = [[CXShutterButton alloc] initWithMode:CXShutterButtonModeVideo];
-    [self addSubview:shutterButton];
-    _shutterButton = shutterButton;
-}
-
-- (void)layoutSubviews
-{
-    [super layoutSubviews];
-    _shutterButton.centerX = self.width * 0.5;
-    _shutterButton.size = CGSizeMake(kCXShutterButtonWidth, kCXShutterButtonHeight);
-    _shutterButton.bottom = self.height - 10.0f;
-    NSLog(@"%f",_shutterButton.centerX);
-}
-
-@end
+static const CGFloat kCXCancelButtonWidth = 44.0f;
+static const CGFloat kCXCancelButtonHeight = 44.0f;
 
 @interface CXOverlayView ()
 
-@property (nonatomic,weak) CXModeView *modeView;
+@property (nonatomic,weak) UIView *cameraModeView;
+
+@property (nonatomic,weak) CXCameraStatusView *cameraStatusView;
+
+@property (nonatomic,strong) CXFlashPopView *flashPopView;
+
+@property (nonatomic,weak) UIButton *cancelButton;
 
 @end
 
@@ -65,82 +43,105 @@
     return self;
 }
 
-- (instancetype)initWithCoder:(NSCoder *)coder
+
+- (void)setup
 {
-    self = [super initWithCoder:coder];
-    if (self) {
-        [self setup];
+    self.backgroundColor = [UIColor clearColor];
+    
+    UIView *cameraModeView = [[UIView alloc] initWithFrame:CGRectZero];
+    cameraModeView.backgroundColor = [UIColor blackColor];
+    [self addSubview:cameraModeView];
+    _cameraModeView = cameraModeView;
+    
+    CXCameraStatusView *cameraStatusView = [[CXCameraStatusView alloc] initWithFrame:CGRectZero];
+    cameraStatusView.backgroundColor = [UIColor blackColor];
+    [self addSubview:cameraStatusView];
+    _cameraStatusView = cameraStatusView;
+    
+    [_cameraStatusView.flashButton addTarget:self action:@selector(flashChange:) forControlEvents:UIControlEventTouchUpInside];
+    [_cameraStatusView.switchButton addTarget:self action:@selector(switchCamera:) forControlEvents:UIControlEventTouchUpInside];
+    
+    
+    CXShutterButton *shutterButton = [[CXShutterButton alloc] initWithMode:CXShutterButtonModeVideo];
+    [shutterButton addTarget:self action:@selector(shutter:) forControlEvents:UIControlEventTouchUpInside];
+    [_cameraModeView addSubview:shutterButton];
+    _shutterButton = shutterButton;
+    
+    
+    UIButton *cancelButton = [[UIButton alloc] initWithFrame:CGRectZero];
+    [cancelButton setImage:[UIImage imageNamed:@"icon_cancel_white"]
+                  forState:UIControlStateNormal];
+    [cancelButton addTarget:self action:@selector(cancel:) forControlEvents:UIControlEventTouchUpInside];
+    [_cameraModeView addSubview:cancelButton];
+    _cancelButton = cancelButton;
+
+}
+
+- (void)flashChange:(UIButton *)sender
+{
+    if (self.flashPopView.isShowing) {
+        [self.flashPopView dismiss];
+    } else {
+        [self.flashPopView showFromView:self toView:_cameraStatusView.flashButton];
     }
-    return self;
+    
+}
+
+- (void)switchCamera:(UIButton *)sender
+{
+    
+}
+
+- (void)shutter:(CXShutterButton *)sender
+{
+    if ([_delegate respondsToSelector:@selector(didSelectedShutter:)]) {
+        [_delegate didSelectedShutter:self];
+    }
+}
+
+- (void)cancel:(UIButton *)sender
+{
+    if ([_delegate respondsToSelector:@selector(didSelectedCancel:)]) {
+        [_delegate didSelectedCancel:self];
+    }
 }
 
 - (void)layoutSubviews
 {
     [super layoutSubviews];
-
     
+    _cameraModeView.left = 0.f;
+    _cameraModeView.bottom = self.height;
+    _cameraModeView.size = CGSizeMake(self.width,kCXOverlayModeViewHeight);
+    
+    _cameraStatusView.left = 0.f;
+    _cameraStatusView.top = 0.f;
+    _cameraStatusView.size = CGSizeMake(self.width, kCXOverlayStatusViewheight);
+    
+    _shutterButton.centerX = _cameraModeView.width *0.5;
+    _shutterButton.bottom = _cameraModeView.height - 15;
+    _shutterButton.size = CGSizeMake(kCXShutterButtonWidth, kCXShutterButtonHeight);
+    
+    _cancelButton.left = 5.0f;
+    _cancelButton.centerY = _shutterButton.centerY;
+    _cancelButton.size = CGSizeMake(kCXCancelButtonWidth, kCXCancelButtonHeight);
 }
 
-- (void)setup
+- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event
 {
-    self.backgroundColor = [UIColor blueColor];
-    self.autoresizingMask = UIViewAutoresizingNone;
-    
-    CXModeView *modeView = [[CXModeView alloc] init];
-    [self addSubview:modeView];
-    _modeView = modeView;
-   
-    
-    NSLayoutConstraint *left = [NSLayoutConstraint constraintWithItem:_modeView
-                                                            attribute:NSLayoutAttributeLeft
-                                                            relatedBy:NSLayoutRelationEqual
-                                                               toItem:self
-                                                            attribute:NSLayoutAttributeLeft
-                                                           multiplier:1.0f
-                                                             constant:0.f];
-    
-    NSLayoutConstraint *right = [NSLayoutConstraint constraintWithItem:_modeView
-                                                            attribute:NSLayoutAttributeRight
-                                                            relatedBy:NSLayoutRelationEqual
-                                                               toItem:self
-                                                            attribute:NSLayoutAttributeRight
-                                                           multiplier:1.0f
-                                                             constant:0.f];
-    
-    NSLayoutConstraint *bottom = [NSLayoutConstraint constraintWithItem:_modeView
-                                                             attribute:NSLayoutAttributeBottom
-                                                             relatedBy:NSLayoutRelationEqual
-                                                                toItem:self
-                                                             attribute:NSLayoutAttributeBottom
-                                                            multiplier:1.0f
-                                                              constant:0.f];
-    
-    NSLayoutConstraint *height = [NSLayoutConstraint constraintWithItem:_modeView
-                                                              attribute:NSLayoutAttributeHeight
-                                                              relatedBy:NSLayoutRelationEqual
-                                                                 toItem:nil
-                                                              attribute:NSLayoutAttributeNotAnAttribute
-                                                             multiplier:0.0f
-                                                               constant:kCXOverlayModeViewHeight];
-    
-    [_modeView addConstraint:height];
-    
-    [self addConstraints:@[left,right,bottom]];
-    
-    
-    [_modeView.shutterButton addTarget:self action:@selector(shuterEvent:) forControlEvents:UIControlEventTouchUpInside];
-    
-    
-}
-
-- (void)shuterEvent:(CXShutterButton *)sender
-{
-    if (sender.shutterButtonMode == CXShutterButtonModePhoto) {
-        
-    } else {
-        sender.selected = !sender.isSelected;
+    if ([_cameraModeView pointInside:[self convertPoint:point toView:_cameraModeView] withEvent:event]
+        || [_cameraStatusView pointInside:[self convertPoint:point toView:_cameraStatusView] withEvent:event]) {
+        return YES;
     }
+    return NO;
 }
 
+- (CXFlashPopView *)flashPopView
+{
+    if (_flashPopView == nil) {
+        _flashPopView = [[CXFlashPopView alloc] init];
+    }
+    return _flashPopView;
+}
 
 @end

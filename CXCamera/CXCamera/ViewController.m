@@ -19,12 +19,18 @@
     [super viewDidLoad];
     
 }
-
-- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
-{
+- (IBAction)showPhotoCamera:(id)sender {
     CXCameraViewController *cameraVC = [[CXCameraViewController alloc] init];
-    cameraVC.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
-    [self presentViewController:cameraVC animated:NO completion:nil];
+    cameraVC.cameraMode = CXCameraModePhoto;
+    [self presentViewController:cameraVC animated:YES completion:nil];
 }
+
+- (IBAction)showVideoCamera:(id)sender {
+    CXCameraViewController *cameraVC = [[CXCameraViewController alloc] init];
+    cameraVC.cameraMode = CXCameraModeVideo;
+    [self presentViewController:cameraVC animated:YES completion:nil];
+}
+
+
 
 @end

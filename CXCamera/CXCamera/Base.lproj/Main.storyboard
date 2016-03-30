@@ -17,17 +17,31 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="点击屏幕启动相机" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yYh-9M-f9g">
-                                <rect key="frame" x="232" y="289" width="136" height="21"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                <nil key="highlightedColor"/>
-                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eAf-F7-Dac">
+                                <rect key="frame" x="285" y="235" width="30" height="30"/>
+                                <state key="normal" title="拍照">
+                                    <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="showPhotoCamera:" destination="BYZ-38-t0r" eventType="touchUpInside" id="qFZ-Xh-944"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1iB-tK-J0I">
+                                <rect key="frame" x="285" y="285" width="30" height="30"/>
+                                <state key="normal" title="录像">
+                                    <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="showVideoCamera:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Eqh-kB-Ehn"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="yYh-9M-f9g" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="1df-4D-bNW"/>
-                            <constraint firstItem="yYh-9M-f9g" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="uhk-Rz-nt6"/>
+                            <constraint firstItem="1iB-tK-J0I" firstAttribute="top" secondItem="eAf-F7-Dac" secondAttribute="bottom" constant="20" id="C4t-hZ-71R"/>
+                            <constraint firstItem="1iB-tK-J0I" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="Iml-mb-B0l"/>
+                            <constraint firstItem="eAf-F7-Dac" firstAttribute="centerX" secondItem="1iB-tK-J0I" secondAttribute="centerX" id="Uw7-u7-hzB"/>
+                            <constraint firstItem="1iB-tK-J0I" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="pju-5T-i1t"/>
                         </constraints>
                     </view>
                 </viewController>

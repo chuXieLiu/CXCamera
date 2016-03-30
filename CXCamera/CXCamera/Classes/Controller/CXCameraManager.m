@@ -23,6 +23,8 @@ static NSString *kCXCAmeraAdjustingExposureContext;
 
 /** 会话 */
 @property (nonatomic,strong) AVCaptureSession *session;
+
+@property (nonatomic,assign) BOOL sessionConfigurateSuccess;
 /** 视频捕捉 */
 @property (nonatomic,strong) AVCaptureDeviceInput *videoInput;
 /** 音频捕捉 */
@@ -40,11 +42,31 @@ static NSString *kCXCAmeraAdjustingExposureContext;
 
 @implementation CXCameraManager
 
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        _automaticWriteToLibary = YES;
+        NSError *error;
+        
+        if ([self configurateSessionWithError:&error]) {
+            _sessionConfigurateSuccess = YES;
+        } else {
+            if ([_delegate respondsToSelector:@selector(captureSessionConfigurateError:)]) {
+                [_delegate captureSessionConfigurateError:error];
+            }
+            _sessionConfigurateSuccess = NO;
+        }
+        
+    }
+    return self;
+}
+
 
 /**
  *  创建会话，捕捉场景活动
  */
-- (BOOL)setupSession:(NSError **)error
+- (BOOL)configurateSessionWithError:(NSError **)error
 {
     // 创建会话，会话是捕捉场景活动的中心枢纽
     _session = [[AVCaptureSession alloc] init];
@@ -60,6 +82,7 @@ static NSString *kCXCAmeraAdjustingExposureContext;
             [_session addInput:_videoInput];
         }
     } else {
+        
         return NO;
     }
     
@@ -89,9 +112,10 @@ static NSString *kCXCAmeraAdjustingExposureContext;
     if ([_session canAddOutput:_movieOutput]) {
         [_session addOutput:_movieOutput];
     }
-
     return YES;
 }
+
+
 
 
 /**
@@ -99,6 +123,7 @@ static NSString *kCXCAmeraAdjustingExposureContext;
  */
 - (void)startSession
 {
+    if (!_sessionConfigurateSuccess) return;
     if (![_session isRunning]) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             [_session startRunning];
@@ -111,6 +136,7 @@ static NSString *kCXCAmeraAdjustingExposureContext;
  */
 - (void)stopSession
 {
+    if (!_sessionConfigurateSuccess) return;
     if ([_session isRunning]) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             [_session stopRunning];
@@ -159,8 +185,8 @@ static NSString *kCXCAmeraAdjustingExposureContext;
     // 配置完成，系统会分批整合所有变更
         [_session commitConfiguration];
     } else {
-        if ([_delegate respondsToSelector:@selector(cameraConfigurateFailed:)]) {
-            [_delegate cameraConfigurateFailed:error];
+        if ([_delegate respondsToSelector:@selector(cameraManagerConfigurateFailed:)]) {
+            [_delegate cameraManagerConfigurateFailed:error];
         }
         return NO;
     }
@@ -185,8 +211,8 @@ static NSString *kCXCAmeraAdjustingExposureContext;
             // 释放锁定
             [device unlockForConfiguration];
         } else {
-            if ([_delegate respondsToSelector:@selector(cameraConfigurateFailed:)]) {
-                [_delegate cameraConfigurateFailed:error];
+            if ([_delegate respondsToSelector:@selector(cameraManagerConfigurateFailed:)]) {
+                [_delegate cameraManagerConfigurateFailed:error];
             }
         }
     }
@@ -214,10 +240,11 @@ static NSString *kCXCAmeraAdjustingExposureContext;
                          forKeyPath:kCXCameraAdjustingExposureKey
                             options:NSKeyValueObservingOptionNew
                             context:&kCXCAmeraAdjustingExposureContext];
+                
                 [device unlockForConfiguration];
             } else {
-                if ([_delegate respondsToSelector:@selector(cameraConfigurateFailed:)]) {
-                    [_delegate cameraConfigurateFailed:error];
+                if ([_delegate respondsToSelector:@selector(cameraManagerConfigurateFailed:)]) {
+                    [_delegate cameraManagerConfigurateFailed:error];
                 }
             }
             
@@ -225,14 +252,17 @@ static NSString *kCXCAmeraAdjustingExposureContext;
     }
 }
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSString *,id> *)change context:(void *)context
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary<NSString *,id> *)change
+                       context:(void *)context
 {
     if (context == &kCXCAmeraAdjustingExposureContext) {
         AVCaptureDevice *device = (AVCaptureDevice *)object;
         // 设备是否不再调整曝光等级
         if (!device.isAdjustingExposure &&
             [device isExposureModeSupported:AVCaptureExposureModeLocked]) {
-            [device removeObserver:self
+            [object removeObserver:self
                         forKeyPath:kCXCameraAdjustingExposureKey
                            context:&kCXCAmeraAdjustingExposureContext];
             dispatch_async(dispatch_get_main_queue(), ^{    // 将exposureMode的更改添加到下一个事件循环，让移除监听得以执行
@@ -242,22 +272,22 @@ static NSString *kCXCAmeraAdjustingExposureContext;
                     device.exposureMode = AVCaptureExposureModeLocked;
                     [device unlockForConfiguration];
                 } else {
-                    if ([_delegate respondsToSelector:@selector(cameraConfigurateFailed:)]) {
-                        [_delegate cameraConfigurateFailed:error];
+                    if ([_delegate respondsToSelector:@selector(cameraManagerConfigurateFailed:)]) {
+                        [_delegate cameraManagerConfigurateFailed:error];
                     }
                 }
             });
-        } else {
-            [super observeValueForKeyPath:keyPath
-                                 ofObject:object
-                                   change:change
-                                  context:context];
         }
+    } else {
+        [super observeValueForKeyPath:keyPath
+                             ofObject:object
+                               change:change
+                              context:context];
     }
 }
 
 /**
- *  切换连续对焦和曝光模式
+ *  连续对焦和曝光模式
  */
 - (void)resetFocusAndExposure
 {
@@ -285,8 +315,8 @@ static NSString *kCXCAmeraAdjustingExposureContext;
         
         [device unlockForConfiguration];
     } else {
-        if ([_delegate respondsToSelector:@selector(cameraConfigurateFailed:)]) {
-            [_delegate cameraConfigurateFailed:error];
+        if ([_delegate respondsToSelector:@selector(cameraManagerConfigurateFailed:)]) {
+            [_delegate cameraManagerConfigurateFailed:error];
         }
     }
 }
@@ -311,8 +341,8 @@ static NSString *kCXCAmeraAdjustingExposureContext;
             device.flashMode = flashMode;
             [device unlockForConfiguration];
         } else {
-            if ([_delegate respondsToSelector:@selector(cameraConfigurateFailed:)]) {
-                [_delegate cameraConfigurateFailed:error];
+            if ([_delegate respondsToSelector:@selector(cameraManagerConfigurateFailed:)]) {
+                [_delegate cameraManagerConfigurateFailed:error];
             }
         }
     }
@@ -346,8 +376,8 @@ static NSString *kCXCAmeraAdjustingExposureContext;
             device.torchMode = torchMode;
             [device unlockForConfiguration];
         } else {
-            if ([_delegate respondsToSelector:@selector(cameraConfigurateFailed:)]) {
-                [_delegate cameraConfigurateFailed:error];
+            if ([_delegate respondsToSelector:@selector(cameraManagerConfigurateFailed:)]) {
+                [_delegate cameraManagerConfigurateFailed:error];
             }
         }
     }
@@ -371,9 +401,16 @@ static NSString *kCXCAmeraAdjustingExposureContext;
         if (imageDataSampleBuffer != NULL) {
             NSData *imageData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageDataSampleBuffer];
             UIImage *image = [UIImage imageWithData:imageData];
-            [self saveImageToLibrary:image];
+            if ([_delegate respondsToSelector:@selector(cameraManagerDidSuccessedCapturedStillImage:)]) {
+                [_delegate cameraManagerDidSuccessedCapturedStillImage:image];
+            }
+            if (_automaticWriteToLibary) {
+                [self saveImageToLibrary:image];
+            }
         } else {
-            NSLog(@"%@",[error localizedDescription]);
+            if ([_delegate respondsToSelector:@selector(cameraManagerDidFailedCapturedStillImage:)]) {
+                [_delegate cameraManagerDidFailedCapturedStillImage:error];
+            }
         }
     }];
 }
@@ -401,13 +438,18 @@ static NSString *kCXCAmeraAdjustingExposureContext;
         
         AVCaptureDevice *device = _videoInput.device;
         
-#pragma mark - 第一次调用摄像头会闪动
-        
+#pragma mark - 设置防抖模式时第一次配置摄像头会闪
+        /*
+         AVCaptureVideoStabilizationModeOff       = 0,
+         AVCaptureVideoStabilizationModeStandard	 = 1,
+         AVCaptureVideoStabilizationModeCinematic = 2,
+         AVCaptureVideoStabilizationModeAuto      = -1,
+         */
         // 支持视频稳定捕捉
         if ([device.activeFormat isVideoStabilizationModeSupported:AVCaptureVideoStabilizationModeAuto]) {
             NSString *version = [UIDevice currentDevice].systemVersion;
             if ([version integerValue] >= 8.0) {
-                videoConnection.preferredVideoStabilizationMode = AVCaptureVideoStabilizationModeAuto;
+                videoConnection.preferredVideoStabilizationMode = AVCaptureVideoStabilizationModeOff;
                 
             } else {
                 
@@ -429,15 +471,15 @@ static NSString *kCXCAmeraAdjustingExposureContext;
                 device.smoothAutoFocusEnabled = YES;
                 [device unlockForConfiguration];
             } else {
-                if ([_delegate respondsToSelector:@selector(cameraConfigurateFailed:)]) {
-                    [_delegate cameraConfigurateFailed:error];
+                if ([_delegate respondsToSelector:@selector(cameraManagerConfigurateFailed:)]) {
+                    [_delegate cameraManagerConfigurateFailed:error];
                 }
             }
         }
         
         
-        
         _movieOutputURL = [self uniqueMovieOutputURL];
+        
         [_movieOutput startRecordingToOutputFileURL:_movieOutputURL
                                   recordingDelegate:self];
 
@@ -480,13 +522,23 @@ static NSString *kCXCAmeraAdjustingExposureContext;
     }
 }
 
+
+/**
+ * 录制时长
+ */
+- (NSTimeInterval)recordedDuration
+{
+    CMTime time = _movieOutput.recordedDuration;
+    return time.value / time.timescale;
+}
+
 #pragma mark - AVCaptureFileOutputRecordingDelegate
 
 - (void)captureOutput:(AVCaptureFileOutput *)captureOutput didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL fromConnections:(NSArray *)connections error:(NSError *)error
 {
     if (error) {
-        if ([_delegate respondsToSelector:@selector(mediaCaptureFailed:)]) {
-            [_delegate mediaCaptureFailed:error];
+        if ([_delegate respondsToSelector:@selector(cameraManagerToSavedPhotosAlbumFailed:error:)]) {
+            [_delegate cameraManagerToSavedPhotosAlbumFailed:outputFileURL error:error];
         }
     } else {
         [self saveVideoToLibrary:[_movieOutputURL copy]];
@@ -536,9 +588,13 @@ static NSString *kCXCAmeraAdjustingExposureContext;
                                   orientation:(NSInteger)image.imageOrientation
         completionBlock:^(NSURL *assetURL, NSError *error) {
             if (!error) {
-                NSLog(@"%@",image);
+                if ([_delegate respondsToSelector:@selector(cameraManagerToSavedPhotosAlbumSuccessed:)]) {
+                    [_delegate cameraManagerToSavedPhotosAlbumSuccessed:image];
+                }
             } else {
-                NSLog(@"%@",[error localizedDescription]);
+                if ([_delegate respondsToSelector:@selector(cameraManagerToSavedPhotosAlbumFailed:error:)]) {
+                    [_delegate cameraManagerToSavedPhotosAlbumFailed:image error:error];
+                }
             }
         }];
     }
@@ -550,16 +606,17 @@ static NSString *kCXCAmeraAdjustingExposureContext;
         ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
         // 检查视频是否可以写入
         if ([library videoAtPathIsCompatibleWithSavedPhotosAlbum:movieURL]) {
-            NSLog(@"%@",movieURL);
-//            [library writeVideoAtPathToSavedPhotosAlbum:movieURL completionBlock:^(NSURL *assetURL, NSError *error) {
-//                if (error) {
-//                    if ([_delegate respondsToSelector:@selector(mediaCaptureFailed:)]) {
-//                        [_delegate mediaCaptureFailed:error];
-//                    }
-//                } else {
-//                    
-//                }
-//            }];
+            [library writeVideoAtPathToSavedPhotosAlbum:movieURL completionBlock:^(NSURL *assetURL, NSError *error) {
+                if (!error) {
+                    if ([_delegate respondsToSelector:@selector(cameraManagerToSavedPhotosAlbumSuccessed:)]) {
+                        [_delegate cameraManagerToSavedPhotosAlbumSuccessed:movieURL];
+                    }
+                } else {
+                    if ([_delegate respondsToSelector:@selector(cameraManagerToSavedPhotosAlbumFailed:error:)]) {
+                        [_delegate cameraManagerToSavedPhotosAlbumFailed:movieURL error:error];
+                    }
+                }
+            }];
         }
     }
 }

@@ -9,7 +9,24 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 
+@class CXPreviewView;
+
+@protocol CXPreviewViewDelegate <NSObject>
+
+- (void)previewView:(CXPreviewView *)preivewView singleTapAtPoint:(CGPoint)point;
+- (void)previewView:(CXPreviewView *)preivewView doubleTapAtPoint:(CGPoint)point;
+
+@end
+
+
 @interface CXPreviewView : UIView
+
+// 是否允许对焦
+@property (nonatomic,assign) BOOL enableFoucs;
+// 是否允许曝光
+@property (nonatomic,assign) BOOL enableExpose;
+
+@property (nonatomic,weak) id<CXPreviewViewDelegate> delegate;
 
 /**
  *  为预览层添加会话

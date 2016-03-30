@@ -8,8 +8,5 @@
 
 #import "CXCommonConst.h"
 
-// 快门按钮
-CGFloat const kCXShutterButtonWidth = 68.0f;
-CGFloat const kCXShutterButtonHeight = 68.0f;
 
-CGFloat const kCXOverlayModeViewHeight = 110.0f;
+

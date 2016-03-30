@@ -26,16 +26,13 @@ static const CGFloat kCXShuterButtonAnimationDuration = 0.2f;
 {
     self = [super init];
     if (self) {
-        _shutterButtonMode = mode;
-        [self setup];
+        self.shutterButtonMode = mode;
     }
     return self;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
-    frame.size.width = kCXShutterButtonWidth;
-    frame.size.height = kCXShutterButtonHeight;
     self = [super initWithFrame:frame];
     if (self) {
         [self setup];
@@ -50,6 +47,9 @@ static const CGFloat kCXShuterButtonAnimationDuration = 0.2f;
 
 - (void)drawRect:(CGRect)rect
 {
+    if (!_circleLayer) {
+        [self drawCircle];
+    }
     // 获取上下文
     CGContextRef ref = UIGraphicsGetCurrentContext();
     // 设置颜色
@@ -115,17 +115,21 @@ static const CGFloat kCXShuterButtonAnimationDuration = 0.2f;
 
 - (void)setShutterButtonMode:(CXShutterButtonMode)shutterButtonMode
 {
-    if (_shutterButtonMode != shutterButtonMode) {
-        _shutterButtonMode = shutterButtonMode;
-        UIColor *circleColor = _shutterButtonMode == CXShutterButtonModeVideo ? [UIColor redColor] : [UIColor whiteColor];
-        _circleLayer.backgroundColor = circleColor.CGColor;
-    }
+    _shutterButtonMode = shutterButtonMode;
+    UIColor *circleColor = _shutterButtonMode == CXShutterButtonModeVideo ? [UIColor redColor] : [UIColor whiteColor];
+    _circleLayer.backgroundColor = circleColor.CGColor;
+
 }
 
 - (void)setup
 {
     self.backgroundColor = [UIColor clearColor];
     self.tintColor = [UIColor clearColor];
+    
+}
+
+- (void)drawCircle
+{
     UIColor *circleColor = _shutterButtonMode == CXShutterButtonModeVideo ? [UIColor redColor] : [UIColor whiteColor];
     // 画圆
     CALayer *circleLayer = [CALayer layer];
@@ -137,7 +141,6 @@ static const CGFloat kCXShuterButtonAnimationDuration = 0.2f;
     circleLayer.cornerRadius = circleLayer.bounds.size.width * 0.5;
     [self.layer addSublayer:circleLayer];
     _circleLayer = circleLayer;
-    
 }
 
 
