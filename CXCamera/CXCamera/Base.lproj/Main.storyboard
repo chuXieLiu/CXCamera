@@ -18,7 +18,12 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eAf-F7-Dac">
-                                <rect key="frame" x="285" y="235" width="30" height="30"/>
+                                <rect key="frame" x="270" y="214" width="60" height="44"/>
+                                <color key="backgroundColor" red="0.90196078430000004" green="0.53333333329999999" blue="0.12549019610000001" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="GqO-YF-4qe"/>
+                                    <constraint firstAttribute="width" constant="60" id="Ssx-EA-zWs"/>
+                                </constraints>
                                 <state key="normal" title="拍照">
                                     <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
@@ -27,7 +32,8 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1iB-tK-J0I">
-                                <rect key="frame" x="285" y="285" width="30" height="30"/>
+                                <rect key="frame" x="270" y="278" width="60" height="44"/>
+                                <color key="backgroundColor" red="0.90196078430000004" green="0.53333333329999999" blue="0.12549019610000001" alpha="1" colorSpace="calibratedRGB"/>
                                 <state key="normal" title="录像">
                                     <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
@@ -40,13 +46,16 @@
                         <constraints>
                             <constraint firstItem="1iB-tK-J0I" firstAttribute="top" secondItem="eAf-F7-Dac" secondAttribute="bottom" constant="20" id="C4t-hZ-71R"/>
                             <constraint firstItem="1iB-tK-J0I" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="Iml-mb-B0l"/>
+                            <constraint firstItem="1iB-tK-J0I" firstAttribute="height" secondItem="eAf-F7-Dac" secondAttribute="height" id="NYC-6S-uG0"/>
                             <constraint firstItem="eAf-F7-Dac" firstAttribute="centerX" secondItem="1iB-tK-J0I" secondAttribute="centerX" id="Uw7-u7-hzB"/>
+                            <constraint firstItem="1iB-tK-J0I" firstAttribute="width" secondItem="eAf-F7-Dac" secondAttribute="width" id="aS3-bk-zxi"/>
                             <constraint firstItem="1iB-tK-J0I" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="pju-5T-i1t"/>
                         </constraints>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="337" y="186"/>
         </scene>
     </scenes>
 </document>

@@ -10,6 +10,8 @@
 #import "CXCameraManager.h"
 #import "CXPreviewView.h"
 #import "CXOverlayView.h"
+#import "UIView+CXExtension.h"
+
 
 
 @interface CXCameraViewController ()
@@ -33,15 +35,15 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    [self.view addSubview:self.previewView];
-    [self.view addSubview:self.overlayView];
+    [self setupPreviewView];
+    [self setupOverlayView];
     
-//    _cameraManager = [[CXCameraManager alloc] init];
-////    _cameraManager.automaticWriteToLibary = NO;
-//    _cameraManager.delegate = self;
-//    
-//    [_previewView setSession:_cameraManager.session];
-//    [_cameraManager startSession];
+    _cameraManager = [[CXCameraManager alloc] init];
+//    _cameraManager.automaticWriteToLibary = NO;
+    _cameraManager.delegate = self;
+    
+    [_previewView setSession:_cameraManager.session];
+    [_cameraManager startSession];
 
 }
 
@@ -65,9 +67,9 @@
     UIDeviceOrientationLandscapeLeft,       // Device oriented horizontally, home button on the right
     UIDeviceOrientationLandscapeRight,      // Device oriented horizontally, home button on the left
     UIDeviceOrientationFaceUp,              // Device oriented flat, face up
-    UIDeviceOrientationFaceDown*/
-    
-//    NSLog(@"%zd",[UIDevice currentDevice].orientation);
+    UIDeviceOrientationFaceDown
+
+//    NSLog(@"%zd",[UIDevice currentDevice].orientation);*/
     return UIInterfaceOrientationMaskPortrait;
 }
 
@@ -94,16 +96,21 @@
     [_cameraManager exposeAtPoint:point];
 }
 
+- (void)previewView:(CXPreviewView *)preivewView pinchScaleChangeValue:(CGFloat)value
+{
+    CGFloat zoomValue = MIN([_overlayView currentZoomValue] + value, 1.0);
+    zoomValue = MAX(zoomValue, 0);
+    [_cameraManager setZoomValue:zoomValue];
+}
+
 #pragma mark - CXOverLayViewDelegate
 
 - (void)didSelectedShutter:(CXOverlayView *)overlayView
 {
-    CXShutterButton *shutterButton = overlayView.shutterButton;
-    if (shutterButton.shutterButtonMode == CXShutterButtonModePhoto) {
+    if (_cameraMode == CXCameraModePhoto) {
         [_cameraManager captureStillImage];
     } else {
-        shutterButton.selected = !shutterButton.isSelected;
-        if (overlayView.shutterButton.selected) {
+        if ([_overlayView prepareToRecording]) {
             dispatch_async(dispatch_get_global_queue(0, 0), ^{
                 [_cameraManager startRecording];
             });
@@ -119,7 +126,98 @@
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
+- (void)didSelectedFlashMode:(CXCaptureFlashMode)flashMode
+{
+    if ([_cameraManager cameraHasFlash]) {
+        switch (flashMode) {
+            case CXCaptureFlashModeOn:
+                [_cameraManager setFlashMode:AVCaptureFlashModeOn];
+                break;
+            case CXCaptureFlashModeOff:
+                [_cameraManager setFlashMode:AVCaptureFlashModeOff];
+                break;
+                
+            case CXCaptureFlashModeAuto:
+                [_cameraManager setFlashMode:AVCaptureFlashModeAuto];
+                break;
+                
+            case CXCaptureFlashModeTorch:
+                if ([_cameraManager cameraHasTorch]) {
+                    if ([_cameraManager torchMode] == AVCaptureTorchModeOff) {
+                        [_cameraManager setTorchMode:AVCaptureTorchModeOn];
+                    } else {
+                        [_cameraManager setTorchMode:AVCaptureTorchModeOff];
+                    }
+                }
+                break;
+                
+            default:
+                break;
+        }
+        
+    }
+}
+
+- (void)didSwitchCamera
+{
+    if ([_cameraManager switchCamera]) {
+        [_overlayView switchDeviceMode:[_cameraManager deviceMode]];
+        _previewView.enableExpose = [_cameraManager isCameraExposureSupported];
+        _previewView.enableFoucs = [_cameraManager isCameraFocusSupported];
+    }
+}
+
+- (void)didtouchDownToCameraZoomType:(CXCameraZoomType)zoomType
+{
+    if ([_cameraManager isCameraZoomSupported]) {
+        CGFloat zoom = 0.f;
+        if (zoomType == CXCameraZoomTypePlus) {
+            zoom = 1.0f;
+        }
+        [_cameraManager rampZoomToValue:zoom];
+    }
+}
+
+- (void)didTouchUpInsideToCameraZoomType:(CXCameraZoomType)zoomType
+{
+    if ([_cameraManager isCameraZoomSupported]) {
+        [_cameraManager cancelZoom];
+    }
+}
+
+- (void)sliderChangeToValue:(CGFloat)zoomValue
+{
+    if ([_cameraManager isCameraZoomSupported]) {
+        [_cameraManager setZoomValue:zoomValue];
+    }
+}
+
+#pragma mark - private method
+
+- (void)setupPreviewView
+{
+    CXPreviewView *previewView = [[CXPreviewView alloc] initWithFrame:self.view.bounds];
+    previewView.delegate = self;
+    [self.view addSubview:previewView];
+    _previewView = previewView;
+}
+
+- (void)setupOverlayView
+{
+    CXOverlayView *overlayView = [[CXOverlayView alloc] initWithFrame:self.view.bounds];
+    overlayView.cameraMode = _cameraMode;
+    overlayView.delegate = self;
+    [self.view addSubview:overlayView];
+    _overlayView = overlayView;
+}
+
+
 #pragma mark - CXCameraManagerDelegate
+
+- (void)cameraRampZoomToValue:(CGFloat)zoomValue
+{
+    [_overlayView updateZoomValue:zoomValue];
+}
 
 
 - (void)captureSessionConfigurateError:(NSError *)error
@@ -139,34 +237,6 @@
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"温馨提示" message:@"保存失败!" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
     [alertView show];
 }
-
-
-
-- (CXPreviewView *)previewView
-{
-    if (_previewView == nil) {
-        _previewView = [[CXPreviewView alloc] initWithFrame:self.view.bounds];
-        _previewView.delegate = self;
-    }
-    return _previewView;
-}
-
-- (CXOverlayView *)overlayView
-{
-    if (_overlayView == nil) {
-        _overlayView = [[CXOverlayView alloc] initWithFrame:self.view.bounds];
-        CXShutterButtonMode buttonMode;
-        if (_cameraMode == CXCameraModePhoto) {
-            buttonMode = CXShutterButtonModePhoto;
-        } else {
-            buttonMode = CXShutterButtonModeVideo;
-        }
-        _overlayView.shutterButton.shutterButtonMode = buttonMode;
-        _overlayView.delegate = self;
-    }
-    return _overlayView;
-}
-
 
 
 

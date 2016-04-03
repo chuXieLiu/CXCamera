@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
+#import "CXCommonConst.h"
 
 @protocol CXCameraManagerDelegate <NSObject>
 
@@ -30,6 +31,8 @@
 - (void)cameraManagerToSavedPhotosAlbumSuccessed:(id)media;
 - (void)cameraManagerToSavedPhotosAlbumFailed:(id)media error:(NSError *)error;
 
+// 缩放值
+- (void)cameraRampZoomToValue:(CGFloat)zoomValue;
 
 
 @end
@@ -39,6 +42,7 @@
 
 @property (nonatomic,weak) id<CXCameraManagerDelegate> delegate;
 
+@property (nonatomic,assign,readonly) CXDeviceMode deviceMode;
 // 会话
 @property (nonatomic,strong,readonly) AVCaptureSession *session;
 // 自动写入资源
@@ -60,15 +64,16 @@
 - (BOOL)canSwitchCamera;
 - (BOOL)switchCamera;
 
-
 /**
- *  对焦
+ *  是否支持对焦
  */
+- (BOOL)isCameraFocusSupported;
 - (void)focusAtPoint:(CGPoint)point;
 
 /**
- *  点击锁定焦点和曝光区域
+ *  是否支持曝光
  */
+- (BOOL)isCameraExposureSupported;
 - (void)exposeAtPoint:(CGPoint)point;
 
 /**
@@ -78,17 +83,28 @@
 
 
 /**
- *  是否已设置闪光灯
+ *  是否能设置闪光灯
  */
-- (BOOL)cameraHasflash;
+- (BOOL)cameraHasFlash;
 - (void)setFlashMode:(AVCaptureFlashMode)flashMode;
 
 /**
- *  是否已开启了手电筒模式
+ *  是否可以开启手电筒模式
  */
 - (BOOL)cameraHasTorch;
 - (AVCaptureTorchMode)torchMode;
 - (void)setTorchMode:(AVCaptureTorchMode)torchMode;
+
+
+/**
+ *  是否支持缩放
+ */
+- (BOOL)isCameraZoomSupported;
+- (CGFloat)maxZoomFactor;
+- (void)setZoomValue:(CGFloat)zoomValue;
+- (void)rampZoomToValue:(CGFloat)zoomValue; // 连续平缓设置一个值
+- (void)cancelZoom;
+
 
 
 /**
@@ -100,7 +116,6 @@
 - (void)startRecording;
 - (void)stopRecording;
 - (NSTimeInterval)recordedDuration;
-
 
 /**
  *  是否允许访问相册

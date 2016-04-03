@@ -10,25 +10,28 @@
 #import "UIView+CXExtension.h"
 #import "CXCameraStatusView.h"
 #import "CXFlashPopView.h"
+#import "CXCameraModeView.h"
+#import "CXShutterButton.h"
+#import "CXCameraZoomSlider.h"
 
-static const CGFloat kCXOverlayStatusViewheight = 44.0f;
-static const CGFloat kCXOverlayModeViewHeight = 110.0f;
+static const CGFloat kCXCameraZoomSliderHeight = 40.0f;
 
-static const CGFloat kCXShutterButtonWidth = 68.0f;
-static const CGFloat kCXShutterButtonHeight = 68.0f;
-
-static const CGFloat kCXCancelButtonWidth = 44.0f;
-static const CGFloat kCXCancelButtonHeight = 44.0f;
 
 @interface CXOverlayView ()
+<
+    CXFlashPopViewDelegate
+>
 
-@property (nonatomic,weak) UIView *cameraModeView;
+@property (nonatomic,weak) CXCameraModeView *cameraModeView;
 
 @property (nonatomic,weak) CXCameraStatusView *cameraStatusView;
 
 @property (nonatomic,strong) CXFlashPopView *flashPopView;
 
-@property (nonatomic,weak) UIButton *cancelButton;
+@property (nonatomic,weak) CXCameraZoomSlider *zoomSlider;
+
+@property (nonatomic,strong) NSArray *popItems;
+
 
 @end
 
@@ -43,69 +46,6 @@ static const CGFloat kCXCancelButtonHeight = 44.0f;
     return self;
 }
 
-
-- (void)setup
-{
-    self.backgroundColor = [UIColor clearColor];
-    
-    UIView *cameraModeView = [[UIView alloc] initWithFrame:CGRectZero];
-    cameraModeView.backgroundColor = [UIColor blackColor];
-    [self addSubview:cameraModeView];
-    _cameraModeView = cameraModeView;
-    
-    CXCameraStatusView *cameraStatusView = [[CXCameraStatusView alloc] initWithFrame:CGRectZero];
-    cameraStatusView.backgroundColor = [UIColor blackColor];
-    [self addSubview:cameraStatusView];
-    _cameraStatusView = cameraStatusView;
-    
-    [_cameraStatusView.flashButton addTarget:self action:@selector(flashChange:) forControlEvents:UIControlEventTouchUpInside];
-    [_cameraStatusView.switchButton addTarget:self action:@selector(switchCamera:) forControlEvents:UIControlEventTouchUpInside];
-    
-    
-    CXShutterButton *shutterButton = [[CXShutterButton alloc] initWithMode:CXShutterButtonModeVideo];
-    [shutterButton addTarget:self action:@selector(shutter:) forControlEvents:UIControlEventTouchUpInside];
-    [_cameraModeView addSubview:shutterButton];
-    _shutterButton = shutterButton;
-    
-    
-    UIButton *cancelButton = [[UIButton alloc] initWithFrame:CGRectZero];
-    [cancelButton setImage:[UIImage imageNamed:@"icon_cancel_white"]
-                  forState:UIControlStateNormal];
-    [cancelButton addTarget:self action:@selector(cancel:) forControlEvents:UIControlEventTouchUpInside];
-    [_cameraModeView addSubview:cancelButton];
-    _cancelButton = cancelButton;
-
-}
-
-- (void)flashChange:(UIButton *)sender
-{
-    if (self.flashPopView.isShowing) {
-        [self.flashPopView dismiss];
-    } else {
-        [self.flashPopView showFromView:self toView:_cameraStatusView.flashButton];
-    }
-    
-}
-
-- (void)switchCamera:(UIButton *)sender
-{
-    
-}
-
-- (void)shutter:(CXShutterButton *)sender
-{
-    if ([_delegate respondsToSelector:@selector(didSelectedShutter:)]) {
-        [_delegate didSelectedShutter:self];
-    }
-}
-
-- (void)cancel:(UIButton *)sender
-{
-    if ([_delegate respondsToSelector:@selector(didSelectedCancel:)]) {
-        [_delegate didSelectedCancel:self];
-    }
-}
-
 - (void)layoutSubviews
 {
     [super layoutSubviews];
@@ -118,30 +58,231 @@ static const CGFloat kCXCancelButtonHeight = 44.0f;
     _cameraStatusView.top = 0.f;
     _cameraStatusView.size = CGSizeMake(self.width, kCXOverlayStatusViewheight);
     
-    _shutterButton.centerX = _cameraModeView.width *0.5;
-    _shutterButton.bottom = _cameraModeView.height - 15;
-    _shutterButton.size = CGSizeMake(kCXShutterButtonWidth, kCXShutterButtonHeight);
+    _zoomSlider.left = 0.f;
+    _zoomSlider.bottom = _cameraModeView.top;
+    _zoomSlider.size = CGSizeMake(self.width, kCXCameraZoomSliderHeight);
     
-    _cancelButton.left = 5.0f;
-    _cancelButton.centerY = _shutterButton.centerY;
-    _cancelButton.size = CGSizeMake(kCXCancelButtonWidth, kCXCancelButtonHeight);
 }
 
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event
 {
-    if ([_cameraModeView pointInside:[self convertPoint:point toView:_cameraModeView] withEvent:event]
-        || [_cameraStatusView pointInside:[self convertPoint:point toView:_cameraStatusView] withEvent:event]) {
+    if (self.flashPopView.isShowing) {  // 不让事件传递
         return YES;
+    } else {
+        BOOL insideStatusView = [_cameraStatusView pointInside:[self convertPoint:point toView:_cameraStatusView] withEvent:event];
+        BOOL insideModeView = [_cameraModeView pointInside:[self convertPoint:point toView:_cameraModeView] withEvent:event];
+        BOOL inSideSlider = !_zoomSlider.isHidden && [_zoomSlider pointInside:[self convertPoint:point toView:_zoomSlider] withEvent:event];
+        if (insideStatusView || insideModeView || inSideSlider) {
+            return YES;
+        }
+        return NO;
     }
-    return NO;
 }
+
+#pragma mark - public method
+
+- (void)switchDeviceMode:(CXDeviceMode)deviceMode
+{
+    if (deviceMode == CXDeviceModeFront) {
+        // flash置为打开
+        [self flashPopView:nil itemDidSelected:self.popItems[2]];
+        _cameraStatusView.flashButton.hidden = YES;
+        
+    } else {
+        _cameraStatusView.flashButton.hidden = NO;
+    }
+}
+
+- (BOOL)prepareToRecording
+{
+    return _cameraModeView.shutterButton.isSelected;
+}
+
+- (void)setCameraMode:(CXCameraMode)cameraMode
+{
+    _cameraMode = cameraMode;
+    if (cameraMode ==CXCameraModePhoto) {
+        _cameraModeView.shutterButton.shutterButtonMode = CXShutterButtonModePhoto;
+    } else {
+        _cameraModeView.shutterButton.shutterButtonMode = CXShutterButtonModeVideo;
+    }
+}
+
+
+- (void)updateZoomValue:(CGFloat)zoomValue
+{
+    _zoomSlider.slider.value = zoomValue;
+}
+
+- (CGFloat)currentZoomValue
+{
+    return _zoomSlider.slider.value;
+}
+
+#pragma mark - CXFlashPopViewDelegate
+
+- (void)flashPopView:(CXFlashPopView *)flashPopView itemDidSelected:(CXPopItem *)item
+{
+    [_cameraStatusView.flashButton setImage:[UIImage imageNamed:item.imageName]
+                                   forState:UIControlStateNormal];
+    if ([_delegate respondsToSelector:@selector(didSelectedFlashMode:)]) {
+        [_delegate didSelectedFlashMode:item.flashMode];
+    }
+}
+
+
+- (void)setup
+{
+    self.backgroundColor = [UIColor clearColor];
+    
+    
+    CXCameraModeView *cameraModeView = [[CXCameraModeView alloc] initWithFrame:CGRectZero];
+    [self addSubview:cameraModeView];
+    _cameraModeView = cameraModeView;
+    
+    
+    CXCameraStatusView *cameraStatusView = [[CXCameraStatusView alloc] initWithFrame:CGRectZero];
+    [self addSubview:cameraStatusView];
+    _cameraStatusView = cameraStatusView;
+    
+    CXCameraZoomSlider *zoomSlider = [[CXCameraZoomSlider alloc] init];
+    [self addSubview:zoomSlider];
+    _zoomSlider = zoomSlider;
+    
+    
+    [_cameraStatusView.flashButton addTarget:self
+                                      action:@selector(flashChange:)
+                            forControlEvents:UIControlEventTouchUpInside];
+    
+    [_cameraStatusView.switchButton addTarget:self
+                                       action:@selector(switchCamera:)
+                             forControlEvents:UIControlEventTouchUpInside];
+
+    [_cameraModeView.shutterButton addTarget:self
+                                      action:@selector(shutter:)
+                            forControlEvents:UIControlEventTouchUpInside];
+    
+    [_cameraModeView.cancelButton addTarget:self
+                                     action:@selector(cancel:)
+                           forControlEvents:UIControlEventTouchUpInside];
+    
+    [_zoomSlider.subtractButton addTarget:self action:@selector(touchDownZoomSubstract:) forControlEvents:UIControlEventTouchDown];
+    
+    [_zoomSlider.subtractButton addTarget:self action:@selector(touchUpInsideZoomSubstract:) forControlEvents:UIControlEventTouchUpInside];
+    
+    [_zoomSlider.plusButton addTarget:self action:@selector(touchDownZoomPlus:) forControlEvents:UIControlEventTouchDown];
+    
+    [_zoomSlider.plusButton addTarget:self action:@selector(touchUpInsideZoomPlus:) forControlEvents:UIControlEventTouchUpInside];
+    
+    
+    [_zoomSlider.slider addTarget:self action:@selector(sliderValueChange:) forControlEvents:UIControlEventValueChanged];
+    
+}
+
+
+
+#pragma mark - target event
+
+- (void)flashChange:(UIButton *)sender
+{
+    if (self.flashPopView.isShowing) {
+        [self.flashPopView dismiss];
+    } else {
+        [self.flashPopView showFromView:self toView:_cameraStatusView.flashButton];
+    }
+}
+
+- (void)switchCamera:(UIButton *)sender
+{
+    if ([_delegate respondsToSelector:@selector(didSwitchCamera)]) {
+        [_delegate didSwitchCamera];
+    }
+}
+
+- (void)shutter:(CXShutterButton *)sender
+{
+    sender.selected = !sender.isSelected;
+    if ([_delegate respondsToSelector:@selector(didSelectedShutter:)]) {
+        [_delegate didSelectedShutter:self];
+    }
+}
+
+- (void)cancel:(UIButton *)sender
+{
+    if ([_delegate respondsToSelector:@selector(didSelectedCancel:)]) {
+        [_delegate didSelectedCancel:self];
+    }
+}
+
+
+- (void)touchDownZoomSubstract:(UIButton *)sender
+{
+    if ([_delegate respondsToSelector:@selector(didtouchDownToCameraZoomType:)]) {
+        [_delegate didtouchDownToCameraZoomType:CXCameraZoomTypeSubstract];
+    }
+}
+
+
+- (void)touchUpInsideZoomSubstract:(UIButton *)sender
+{
+    if ([_delegate respondsToSelector:@selector(didTouchUpInsideToCameraZoomType:)]) {
+        [_delegate didTouchUpInsideToCameraZoomType:CXCameraZoomTypeSubstract];
+    }
+}
+
+- (void)touchDownZoomPlus:(UIButton *)sender
+{
+    if ([_delegate respondsToSelector:@selector(didtouchDownToCameraZoomType:)]) {
+        [_delegate didtouchDownToCameraZoomType:CXCameraZoomTypePlus];
+    }
+}
+
+
+- (void)touchUpInsideZoomPlus:(UIButton *)sender
+{
+    if ([_delegate respondsToSelector:@selector(didTouchUpInsideToCameraZoomType:)]) {
+        [_delegate didTouchUpInsideToCameraZoomType:CXCameraZoomTypePlus];
+    }
+}
+
+
+- (void)sliderValueChange:(UISlider *)sender
+{
+    if ([_delegate respondsToSelector:@selector(sliderChangeToValue:)]) {
+        [_delegate sliderChangeToValue:sender.value];
+    }
+}
+
+
+
+#pragma mark - lazy
 
 - (CXFlashPopView *)flashPopView
 {
     if (_flashPopView == nil) {
-        _flashPopView = [[CXFlashPopView alloc] init];
+        _flashPopView = [[CXFlashPopView alloc] initWithItems:self.popItems];
+        _flashPopView.delegate = self;
     }
     return _flashPopView;
+}
+
+- (NSArray *)popItems
+{
+    if (_popItems == nil) {
+        NSArray *images = @[
+                            @"camera_flash_off_a",
+                            @"camera_flash_auto_a",
+                            @"camera_flash_on_a",
+                            @"camera_torch_on_a"
+                            ];
+        NSMutableArray *items = @[].mutableCopy;
+        for (int i = 0 ; i < images.count; i++) {
+            CXPopItem *item = [CXPopItem popItemWithFalshMode:i imageName:images[i]];
+            [items addObject:item];
+        }
+        _popItems = items.copy;
+    }
+    return _popItems;
 }
 
 @end

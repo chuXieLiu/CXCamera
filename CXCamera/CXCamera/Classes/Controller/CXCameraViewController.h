@@ -7,11 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "CXCommonConst.h"
 
-typedef enum : NSUInteger {
-    CXCameraModePhoto,
-    CXCameraModeVideo,
-} CXCameraMode;
 
 @interface CXCameraViewController : UIViewController
 

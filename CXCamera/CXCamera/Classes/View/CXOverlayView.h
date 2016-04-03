@@ -7,8 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "CXShutterButton.h"
 #import "CXCommonConst.h"
+
+typedef enum : NSUInteger {
+    CXCameraZoomTypeSubstract,
+    CXCameraZoomTypePlus
+} CXCameraZoomType;
+
 
 @class CXOverlayView;
 
@@ -18,14 +23,37 @@
 
 - (void)didSelectedShutter:(CXOverlayView *)overlayView;
 - (void)didSelectedCancel:(CXOverlayView *)overlayView;
+- (void)didSelectedFlashMode:(CXCaptureFlashMode)flashMode;
+- (void)didSwitchCamera;
+
+
+- (void)didtouchDownToCameraZoomType:(CXCameraZoomType)zoomType;
+- (void)didTouchUpInsideToCameraZoomType:(CXCameraZoomType)zoomType;
+- (void)sliderChangeToValue:(CGFloat)zoomValue;
 
 @end
 
 @interface CXOverlayView : UIView
 
+@property (nonatomic,assign) CXCameraMode cameraMode;
+
 @property (nonatomic,weak) id<CXOverLayViewDelegate> delegate;
 
-@property (nonatomic,weak) CXShutterButton *shutterButton;
+
+// 切换设备
+- (void)switchDeviceMode:(CXDeviceMode)deviceMode;
+
+// 准备录制视频
+- (BOOL)prepareToRecording;
+
+- (void)updateZoomValue:(CGFloat)zoomValue;
+- (CGFloat)currentZoomValue;
+
+
+
+
+
+
 
 
 

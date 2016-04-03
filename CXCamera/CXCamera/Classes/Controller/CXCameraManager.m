@@ -12,14 +12,27 @@
 #import "NSString+CXExtension.h"
 
 // 是否正在调整曝光属性
-static NSString *kCXCameraAdjustingExposureKey = @"adjustingExposure";
+static NSString *kCXCameraDeviceInputPropertyAdjustingExposure = @"adjustingExposure";
 
-static NSString *kCXCAmeraAdjustingExposureContext;
+static NSString *KCXCameraDeviceInputPropertyVideoZoomFactor = @"videoZoomFactor";
+
+static NSString *KCXCameraDeviceInputPropertyRampingVideoZoom = @"rampingVideoZoom";
+
+// 最大缩放值
+static const CGFloat kCXCameraMaxZoomValue = 4.0f;
+
+static NSString *kCXCameraAdjustingExposureContext;
+
+static NSString *kCXCameraVideoZoomFactorContext;
+
+static NSString *kCXCameraRampingVideoZoomContext;
 
 @interface CXCameraManager ()
 <
     AVCaptureFileOutputRecordingDelegate
 >
+
+@property (nonatomic,assign) CXDeviceMode deviceMode;
 
 /** 会话 */
 @property (nonatomic,strong) AVCaptureSession *session;
@@ -51,6 +64,7 @@ static NSString *kCXCAmeraAdjustingExposureContext;
         
         if ([self configurateSessionWithError:&error]) {
             _sessionConfigurateSuccess = YES;
+            _deviceMode = CXDeviceModeBack;
         } else {
             if ([_delegate respondsToSelector:@selector(captureSessionConfigurateError:)]) {
                 [_delegate captureSessionConfigurateError:error];
@@ -62,6 +76,7 @@ static NSString *kCXCAmeraAdjustingExposureContext;
     return self;
 }
 
+#pragma mark - 会话
 
 /**
  *  创建会话，捕捉场景活动
@@ -112,6 +127,18 @@ static NSString *kCXCAmeraAdjustingExposureContext;
     if ([_session canAddOutput:_movieOutput]) {
         [_session addOutput:_movieOutput];
     }
+    
+    // 监听缩放值
+    [_videoInput.device addObserver:self
+                         forKeyPath:KCXCameraDeviceInputPropertyVideoZoomFactor
+                            options:NSKeyValueObservingOptionNew
+                            context:&kCXCameraVideoZoomFactorContext];
+    [_videoInput.device addObserver:self
+                         forKeyPath:KCXCameraDeviceInputPropertyRampingVideoZoom
+                            options:NSKeyValueObservingOptionNew
+                            context:&kCXCameraRampingVideoZoomContext];
+    
+    
     return YES;
 }
 
@@ -144,6 +171,7 @@ static NSString *kCXCAmeraAdjustingExposureContext;
     }
 }
 
+#pragma mark - 摄像头
 
 /**
  *  是否支持切换摄像头
@@ -163,6 +191,7 @@ static NSString *kCXCAmeraAdjustingExposureContext;
     
     // 获取未激活摄像头
     AVCaptureDevice *device = [self inactiveCamera];
+
     // 生成新的视频捕捉对象
     NSError *error;
     AVCaptureDeviceInput *videoInput = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
@@ -191,7 +220,20 @@ static NSString *kCXCAmeraAdjustingExposureContext;
         return NO;
     }
     
+    if ([self cameraHasTorch]) {   // 前置摄像头不支持手电筒模式
+        _deviceMode = CXDeviceModeBack;
+    } else {
+        _deviceMode = CXDeviceModeFront;
+    }
+    
     return YES;
+}
+
+#pragma mark - 对焦与曝光
+
+- (BOOL)isCameraFocusSupported
+{
+    return _videoInput.device.isFocusPointOfInterestSupported;
 }
 
 /**
@@ -218,6 +260,11 @@ static NSString *kCXCAmeraAdjustingExposureContext;
     }
 }
 
+- (BOOL)isCameraExposureSupported
+{
+    return _videoInput.device.isExposurePointOfInterestSupported;
+}
+
 /**
  *  点击锁定焦点和曝光区域
  */
@@ -237,9 +284,9 @@ static NSString *kCXCAmeraAdjustingExposureContext;
             if ([device isExposureModeSupported:AVCaptureExposureModeLocked]) {
                 // 观察是否正在调整曝光属性的变化
                 [device addObserver:self
-                         forKeyPath:kCXCameraAdjustingExposureKey
+                         forKeyPath:kCXCameraDeviceInputPropertyAdjustingExposure
                             options:NSKeyValueObservingOptionNew
-                            context:&kCXCAmeraAdjustingExposureContext];
+                            context:&kCXCameraAdjustingExposureContext];
                 
                 [device unlockForConfiguration];
             } else {
@@ -257,14 +304,14 @@ static NSString *kCXCAmeraAdjustingExposureContext;
                         change:(NSDictionary<NSString *,id> *)change
                        context:(void *)context
 {
-    if (context == &kCXCAmeraAdjustingExposureContext) {
+    if (context == &kCXCameraAdjustingExposureContext) {
         AVCaptureDevice *device = (AVCaptureDevice *)object;
         // 设备是否不再调整曝光等级
         if (!device.isAdjustingExposure &&
             [device isExposureModeSupported:AVCaptureExposureModeLocked]) {
             [object removeObserver:self
-                        forKeyPath:kCXCameraAdjustingExposureKey
-                           context:&kCXCAmeraAdjustingExposureContext];
+                        forKeyPath:kCXCameraDeviceInputPropertyAdjustingExposure
+                           context:&kCXCameraAdjustingExposureContext];
             dispatch_async(dispatch_get_main_queue(), ^{    // 将exposureMode的更改添加到下一个事件循环，让移除监听得以执行
                 NSError *error;
                 if ([device lockForConfiguration:&error]) {
@@ -278,11 +325,28 @@ static NSString *kCXCAmeraAdjustingExposureContext;
                 }
             });
         }
+    } else if (context == &kCXCameraVideoZoomFactorContext) {
+        [self updateZoomValue];
+    } else if (context == &kCXCameraRampingVideoZoomContext) {
+        if (_videoInput.device.isRampingVideoZoom) {
+            [self updateZoomValue];
+        }
+        
     } else {
         [super observeValueForKeyPath:keyPath
                              ofObject:object
                                change:change
                               context:context];
+    }
+}
+
+- (void)updateZoomValue
+{
+    CGFloat currentZoomFactor = _videoInput.device.videoZoomFactor;
+    CGFloat maxZoomFactor = [self maxZoomFactor];
+    CGFloat value = log(currentZoomFactor) / log(maxZoomFactor);
+    if ([_delegate respondsToSelector:@selector(cameraRampZoomToValue:)]) {
+        [_delegate cameraRampZoomToValue:value];
     }
 }
 
@@ -322,9 +386,9 @@ static NSString *kCXCAmeraAdjustingExposureContext;
 }
 
 /**
- *  是否已设置闪光灯
+ *  是否能设置闪光灯
  */
-- (BOOL)cameraHasflash
+- (BOOL)cameraHasFlash
 {
     return [_videoInput.device hasFlash];
 }
@@ -334,6 +398,13 @@ static NSString *kCXCAmeraAdjustingExposureContext;
  */
 - (void)setFlashMode:(AVCaptureFlashMode)flashMode
 {
+    // 如果已开启手电筒模式要先关闭
+    if ([self torchMode] == AVCaptureTorchModeOn) {
+        if ([self cameraHasTorch]) {
+            [self setTorchMode:AVCaptureTorchModeOff];
+        }
+    }
+    
     AVCaptureDevice *device = _videoInput.device;
     if ([device isFlashModeSupported:flashMode]) {
         NSError *error;
@@ -346,10 +417,12 @@ static NSString *kCXCAmeraAdjustingExposureContext;
             }
         }
     }
+    
+    
 }
 
 /**
- *  是否已开启了手电筒
+ *  是否可以开启手电筒模式
  */
 - (BOOL)cameraHasTorch
 {
@@ -383,7 +456,72 @@ static NSString *kCXCAmeraAdjustingExposureContext;
     }
 }
 
+#pragma mark - 缩放
 
+- (BOOL)isCameraZoomSupported
+{
+    // 大于1值表示支持缩放
+    return _videoInput.device.activeFormat.videoMaxZoomFactor > 1.0f;
+}
+
+- (CGFloat)maxZoomFactor
+{
+    // 如果太大的缩放值会抛出异常
+    return MIN(_videoInput.device.activeFormat.videoMaxZoomFactor, kCXCameraMaxZoomValue);
+}
+
+- (void)setZoomValue:(CGFloat)zoomValue
+{
+    AVCaptureDevice *device = _videoInput.device;
+    if (!device.isRampingVideoZoom) {
+        NSError *error;
+        if ([device lockForConfiguration:&error]) {
+            // 缩放系数zoomValue为0-1
+            CGFloat zoomFactor = pow([self maxZoomFactor], zoomValue);
+            device.videoZoomFactor = zoomFactor;
+            [device unlockForConfiguration];
+        } else {
+            if ([_delegate respondsToSelector:@selector(cameraManagerConfigurateFailed:)]) {
+                [_delegate cameraManagerConfigurateFailed:error];
+            }
+        }
+    }
+}
+
+- (void)rampZoomToValue:(CGFloat)zoomValue
+{
+    AVCaptureDevice *device = _videoInput.device;
+    CGFloat zoomFactor = pow([self maxZoomFactor], zoomValue);
+    NSError *error;
+    if ([device lockForConfiguration:&error]) {
+        // rate: zoom factor is continuously scaled by pow(2,rate * time),double every second,每秒增加缩放因子一倍
+        [device rampToVideoZoomFactor:zoomFactor withRate:1.0f];
+        [device unlockForConfiguration];
+    } else {
+        if ([_delegate respondsToSelector:@selector(cameraManagerConfigurateFailed:)]) {
+            [_delegate cameraManagerConfigurateFailed:error];
+        }
+    }
+}
+
+- (void)cancelZoom
+{
+    NSError *error;
+    AVCaptureDevice *device = _videoInput.device;
+    if ([device lockForConfiguration:&error]) {
+        /*
+         This method is equivalent to calling rampToVideoZoomFactor:withRate: using the current zoom factor
+         target and a rate of 0.  This allows a smooth stop to any changes in zoom which were in progress.
+         */
+        // 平稳的用当前的缩放值设置
+        [device cancelVideoZoomRamp];
+        [device unlockForConfiguration];
+    } else {
+        if ([_delegate respondsToSelector:@selector(cameraManagerConfigurateFailed:)]) {
+            [_delegate cameraManagerConfigurateFailed:error];
+        }
+    }
+}
 
 /**
  *  捕捉静态图片
@@ -438,7 +576,7 @@ static NSString *kCXCAmeraAdjustingExposureContext;
         
         AVCaptureDevice *device = _videoInput.device;
         
-#pragma mark - 设置防抖模式时第一次配置摄像头会闪
+#pragma mark - 设置防抖模式时第一次配置摄像头会闪蓝光
         /*
          AVCaptureVideoStabilizationModeOff       = 0,
          AVCaptureVideoStabilizationModeStandard	 = 1,
@@ -555,7 +693,8 @@ static NSString *kCXCAmeraAdjustingExposureContext;
      UIDeviceOrientationPortraitUpsideDown,  // Device oriented vertically, home button on the top
      UIDeviceOrientationLandscapeLeft,       // Device oriented horizontally, home button on the right
      UIDeviceOrientationLandscapeRight,      // Device oriented horizontally, home button on the left
-     
+     UIDeviceOrientationFaceUp,              // Device oriented flat, face up正面朝上
+     UIDeviceOrientationFaceDown
      */
     /*AVCaptureVideoOrientationPortrait           = 1,
      AVCaptureVideoOrientationPortraitUpsideDown = 2,
@@ -573,12 +712,20 @@ static NSString *kCXCAmeraAdjustingExposureContext;
         case UIDeviceOrientationLandscapeLeft:
             orientation = AVCaptureVideoOrientationLandscapeRight;
             break;
-        default:
+        case UIDeviceOrientationLandscapeRight:
             orientation = AVCaptureVideoOrientationLandscapeLeft;
+            break;
+        case UIDeviceOrientationFaceUp:
+        case UIDeviceOrientationFaceDown:
+            orientation = AVCaptureVideoOrientationPortrait;
+            break;
+        default:
             break;
     }
     return orientation;
 }
+
+#pragma mark - 捕捉
 
 - (void)saveImageToLibrary:(UIImage *)image
 {
@@ -597,6 +744,27 @@ static NSString *kCXCAmeraAdjustingExposureContext;
                 }
             }
         }];
+    }
+}
+
+#pragma mark - private method
+
+- (BOOL)authorizeAssetsLibrary
+{
+    if (NSClassFromString(@"PHAsset")) {
+        PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
+        if (status == PHAuthorizationStatusRestricted || status == PHAuthorizationStatusDenied) {
+            return NO;
+        } else {
+            return YES;
+        }
+    } else {
+        ALAuthorizationStatus author = [ALAssetsLibrary authorizationStatus];
+        if (author == ALAuthorizationStatusRestricted || author == ALAuthorizationStatusDenied) {
+            return NO;
+        } else {
+            return YES;
+        }
     }
 }
 
@@ -639,26 +807,9 @@ static NSString *kCXCAmeraAdjustingExposureContext;
 }
 
 
-- (BOOL)authorizeAssetsLibrary
-{
-    if (NSClassFromString(@"PHAsset")) {
-        PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
-        if (status == PHAuthorizationStatusRestricted || status == PHAuthorizationStatusDenied) {
-            return NO;
-        } else {
-            return YES;
-        }
-    } else {
-        ALAuthorizationStatus author = [ALAssetsLibrary authorizationStatus];
-        if (author == ALAuthorizationStatusRestricted || author == ALAuthorizationStatusDenied) {
-            return NO;
-        } else {
-            return YES;
-        }
-    }
-}
 
-#pragma mark - private method
+
+
 
 - (NSUInteger)cameraCount
 {
@@ -690,7 +841,26 @@ static NSString *kCXCAmeraAdjustingExposureContext;
 
 
 
-
+- (void)dealloc
+{
+    [_videoInput.device removeObserver:self
+                            forKeyPath:KCXCameraDeviceInputPropertyVideoZoomFactor
+                               context:&kCXCameraVideoZoomFactorContext];
+    
+    [_videoInput.device removeObserver:self
+                            forKeyPath:KCXCameraDeviceInputPropertyRampingVideoZoom
+                               context:&kCXCameraRampingVideoZoomContext];
+    if (_session) {
+        [self stopSession];
+        _session = nil;
+    }
+    _videoInput = nil;
+    _audioInput = nil;
+    _imageOutput = nil;
+    _movieOutput = nil;
+    _movieOutputURL = nil;
+    
+}
 
 
 

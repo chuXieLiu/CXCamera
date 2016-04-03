@@ -9,4 +9,6 @@
 #import "CXCommonConst.h"
 
 
+CGFloat const kCXOverlayStatusViewheight = 44.0f;
 
+CGFloat const kCXOverlayModeViewHeight = 110.0f;

@@ -15,6 +15,8 @@
 		F93DC6401CA609D900F9D448 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F93DC63E1CA609D900F9D448 /* LaunchScreen.storyboard */; };
 		F93DC64B1CA609D900F9D448 /* CXCameraTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F93DC64A1CA609D900F9D448 /* CXCameraTests.m */; };
 		F93DC65C1CA60A6B00F9D448 /* CXCameraManager.m in Sources */ = {isa = PBXBuildFile; fileRef = F93DC65B1CA60A6B00F9D448 /* CXCameraManager.m */; };
+		F989C3711CAF444A00787E30 /* CXCameraModeView.m in Sources */ = {isa = PBXBuildFile; fileRef = F989C3701CAF444A00787E30 /* CXCameraModeView.m */; };
+		F989C3741CAFB9FF00787E30 /* CXCameraZoomSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = F989C3731CAFB9FF00787E30 /* CXCameraZoomSlider.m */; };
 		F9D2D6BA1CA6336B00B00969 /* CXCameraViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F9D2D6B91CA6336B00B00969 /* CXCameraViewController.m */; };
 		F9D2D6BF1CA6346900B00969 /* CXShutterButton.m in Sources */ = {isa = PBXBuildFile; fileRef = F9D2D6BE1CA6346900B00969 /* CXShutterButton.m */; };
 		F9ED86231CA8D952007001E8 /* NSString+CXExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = F9ED86221CA8D952007001E8 /* NSString+CXExtension.m */; };
@@ -55,6 +57,10 @@
 		F93DC64C1CA609D900F9D448 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F93DC65A1CA60A6B00F9D448 /* CXCameraManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CXCameraManager.h; sourceTree = "<group>"; };
 		F93DC65B1CA60A6B00F9D448 /* CXCameraManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CXCameraManager.m; sourceTree = "<group>"; };
+		F989C36F1CAF444A00787E30 /* CXCameraModeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CXCameraModeView.h; sourceTree = "<group>"; };
+		F989C3701CAF444A00787E30 /* CXCameraModeView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CXCameraModeView.m; sourceTree = "<group>"; };
+		F989C3721CAFB9FF00787E30 /* CXCameraZoomSlider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CXCameraZoomSlider.h; sourceTree = "<group>"; };
+		F989C3731CAFB9FF00787E30 /* CXCameraZoomSlider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CXCameraZoomSlider.m; sourceTree = "<group>"; };
 		F9D2D6B81CA6336B00B00969 /* CXCameraViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CXCameraViewController.h; sourceTree = "<group>"; };
 		F9D2D6B91CA6336B00B00969 /* CXCameraViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CXCameraViewController.m; sourceTree = "<group>"; };
 		F9D2D6BD1CA6346900B00969 /* CXShutterButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CXShutterButton.h; sourceTree = "<group>"; };
@@ -202,16 +208,20 @@
 		F93DC6591CA60A1E00F9D448 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				F9ED867E1CABD139007001E8 /* CXFlashPopView.h */,
+				F9ED867F1CABD139007001E8 /* CXFlashPopView.m */,
 				F9D2D6BD1CA6346900B00969 /* CXShutterButton.h */,
 				F9D2D6BE1CA6346900B00969 /* CXShutterButton.m */,
+				F9ED867B1CABC62A007001E8 /* CXCameraStatusView.h */,
+				F9ED867C1CABC62A007001E8 /* CXCameraStatusView.m */,
+				F989C36F1CAF444A00787E30 /* CXCameraModeView.h */,
+				F989C3701CAF444A00787E30 /* CXCameraModeView.m */,
 				F9ED862D1CA90532007001E8 /* CXPreviewView.h */,
 				F9ED862E1CA90532007001E8 /* CXPreviewView.m */,
 				F9ED86721CAA7512007001E8 /* CXOverlayView.h */,
 				F9ED86731CAA7512007001E8 /* CXOverlayView.m */,
-				F9ED867B1CABC62A007001E8 /* CXCameraStatusView.h */,
-				F9ED867C1CABC62A007001E8 /* CXCameraStatusView.m */,
-				F9ED867E1CABD139007001E8 /* CXFlashPopView.h */,
-				F9ED867F1CABD139007001E8 /* CXFlashPopView.m */,
+				F989C3721CAFB9FF00787E30 /* CXCameraZoomSlider.h */,
+				F989C3731CAFB9FF00787E30 /* CXCameraZoomSlider.m */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -333,6 +343,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F989C3711CAF444A00787E30 /* CXCameraModeView.m in Sources */,
 				F93DC6381CA609D900F9D448 /* ViewController.m in Sources */,
 				F9D2D6BF1CA6346900B00969 /* CXShutterButton.m in Sources */,
 				F9ED86771CAB7BD5007001E8 /* CALayer+CXExtension.m in Sources */,
@@ -347,6 +358,7 @@
 				F9D2D6BA1CA6336B00B00969 /* CXCameraViewController.m in Sources */,
 				F9ED86291CA8D992007001E8 /* NSTimer+CXExtension.m in Sources */,
 				F9ED86231CA8D952007001E8 /* NSString+CXExtension.m in Sources */,
+				F989C3741CAFB9FF00787E30 /* CXCameraZoomSlider.m in Sources */,
 				F9ED86801CABD139007001E8 /* CXFlashPopView.m in Sources */,
 				F93DC65C1CA60A6B00F9D448 /* CXCameraManager.m in Sources */,
 			);

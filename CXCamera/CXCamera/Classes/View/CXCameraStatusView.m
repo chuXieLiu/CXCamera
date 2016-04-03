@@ -24,17 +24,19 @@
 {
     [super layoutSubviews];
     
-    _flashButton.left = 0.f;
+    _flashButton.left = 10.f;
     _flashButton.top = 0.f;
     _flashButton.size = CGSizeMake(self.height, self.height);
     
-    _switchButton.right = self.width;
+    _switchButton.right = self.width - _flashButton.left;
     _switchButton.top = 0.f;
     _switchButton.size = _flashButton.size;
 }
 
 - (void)setup
 {
+    self.backgroundColor = [UIColor blackColor];
+    
     UIButton *flashButton = [[UIButton alloc] init];
     [flashButton setImage:[UIImage imageNamed:@"camera_flash_on_a"]
                  forState:UIControlStateNormal];

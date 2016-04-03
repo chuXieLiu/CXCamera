@@ -16,6 +16,11 @@
 - (void)previewView:(CXPreviewView *)preivewView singleTapAtPoint:(CGPoint)point;
 - (void)previewView:(CXPreviewView *)preivewView doubleTapAtPoint:(CGPoint)point;
 
+/**
+ *  value：相对于上次pinch的scale的差值
+ */
+- (void)previewView:(CXPreviewView *)preivewView pinchScaleChangeValue:(CGFloat)value;
+
 @end
 
 

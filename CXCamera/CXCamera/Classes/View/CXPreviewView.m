@@ -23,6 +23,10 @@ static const NSTimeInterval kCXBoxAnimationInterval = 0.2;
 
 @property (nonatomic,weak) UIView *exposeBox;
 
+@property (nonatomic,assign) CGFloat lastScale;
+
+@property (nonatomic,assign) CGFloat num;
+
 @end
 
 
@@ -40,24 +44,16 @@ static const NSTimeInterval kCXBoxAnimationInterval = 0.2;
     if (self) {
         [self setup];
         
+        
     }
     return self;
 }
-
 
 - (void)awakeFromNib
 {
     [self setup];
 }
 
-- (void)motionBegan:(UIEventSubtype)motion withEvent:(nullable UIEvent *)event NS_AVAILABLE_IOS(3_0)
-{
-    NSLog(@"%s",__func__);
-}
-- (void)motionEnded:(UIEventSubtype)motion withEvent:(nullable UIEvent *)event NS_AVAILABLE_IOS(3_0)
-{
-    NSLog(@"%s",__func__);
-}
 
 - (void)setup
 {
@@ -67,13 +63,22 @@ static const NSTimeInterval kCXBoxAnimationInterval = 0.2;
     _enableExpose = YES;
     _enableFoucs = YES;
     
+    
     UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
     [self addGestureRecognizer:singleTap];
+    
     
     UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTap:)];
     doubleTap.numberOfTapsRequired = 2;
     [self addGestureRecognizer:doubleTap];
+    
+    
     [singleTap requireGestureRecognizerToFail:doubleTap];
+    
+    
+    UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
+    [self addGestureRecognizer:pinchGesture];
+    _lastScale = 1;
     
     UIView *foucsView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, kCXFoucsBoxWidth, kCXFoucsBoxHeight)];
     foucsView.backgroundColor = [UIColor clearColor];
@@ -83,6 +88,8 @@ static const NSTimeInterval kCXBoxAnimationInterval = 0.2;
     [self addSubview:foucsView];
     _focusBox = foucsView;
     
+    
+    
     UIView *exposeView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, kCXExposeBoxWidth, kCXExposeBoxHeight)];
     exposeView.backgroundColor = [UIColor clearColor];
     exposeView.layer.borderWidth = 5.0f;
@@ -90,6 +97,34 @@ static const NSTimeInterval kCXBoxAnimationInterval = 0.2;
     exposeView.hidden = YES;
     [self addSubview:exposeView];
     _exposeBox = exposeView;
+    
+    
+    
+}
+
+
+- (void)handlePinch:(UIPinchGestureRecognizer *)gesture
+{
+    CGFloat value = 0.f;
+    if (gesture.scale > 1) {    // scale递增
+        CGFloat margin = gesture.scale - _lastScale;
+//        if (margin < 0.1) {
+            value = margin;
+//        }
+    }
+    if (gesture.scale < 1) {    // scale递增或递减
+        CGFloat margin = gesture.scale - _lastScale;
+//        if (fabs(margin) < 0.1) {
+            value = margin;
+//        }
+    }
+    _lastScale = gesture.scale;
+    if ([_delegate respondsToSelector:@selector(previewView:pinchScaleChangeValue:)]) {
+        [_delegate previewView:self pinchScaleChangeValue:value];
+    }
+    if (gesture.state == UIGestureRecognizerStateEnded  || gesture.state == UIGestureRecognizerStateCancelled || gesture.state == UIGestureRecognizerStateFailed) {
+        _lastScale = 1;
+    }
 }
 
 - (void)handleSingleTap:(UITapGestureRecognizer *)gesture
@@ -113,6 +148,8 @@ static const NSTimeInterval kCXBoxAnimationInterval = 0.2;
         [_delegate previewView:self doubleTapAtPoint:[self captureDevicePoint:point]];
     }
 }
+
+
 
 - (CGPoint)captureDevicePoint:(CGPoint)point
 {
