@@ -14,4 +14,6 @@
 
 @property (nonatomic,weak) UIButton *switchButton;
 
+@property (nonatomic,weak) UILabel *timeLabel;
+
 @end

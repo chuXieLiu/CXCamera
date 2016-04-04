@@ -12,7 +12,9 @@
 
 @interface CXCameraViewController : UIViewController
 
+/// 相机类型 CXCameraModePhoto  / CXCameraModeVideo
 @property (nonatomic,assign) CXCameraMode cameraMode;
-
+/// 是否自动写入相册 , 默认为NO
+@property (nonatomic,assign) BOOL automaticWriteToLibary;
 
 @end

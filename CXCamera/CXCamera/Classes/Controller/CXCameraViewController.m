@@ -11,7 +11,13 @@
 #import "CXPreviewView.h"
 #import "CXOverlayView.h"
 #import "UIView+CXExtension.h"
+#import "NSTimer+CXExtension.h"
 
+
+
+static const CGFloat kCXCameraHidenZoomSliderTimeInterval = 3.0f;
+
+static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
 
 
 @interface CXCameraViewController ()
@@ -24,11 +30,17 @@
 
 @property (nonatomic,strong) CXCameraManager *cameraManager;
 
-@property (nonatomic,strong) CXPreviewView *previewView;
+@property (nonatomic,weak) CXPreviewView *previewView;
 
-@property (nonatomic,strong) CXOverlayView *overlayView;
+@property (nonatomic,weak) CXOverlayView *overlayView;
+
+@property (nonatomic,strong) NSTimer *zoomSliderTimer;
+
+@property (nonatomic,strong) NSTimer *recordingTimer;
 
 @end
+
+
 
 @implementation CXCameraViewController
 
@@ -39,7 +51,7 @@
     [self setupOverlayView];
     
     _cameraManager = [[CXCameraManager alloc] init];
-//    _cameraManager.automaticWriteToLibary = NO;
+    _cameraManager.automaticWriteToLibary = _automaticWriteToLibary;
     _cameraManager.delegate = self;
     
     [_previewView setSession:_cameraManager.session];
@@ -98,6 +110,7 @@
 
 - (void)previewView:(CXPreviewView *)preivewView pinchScaleChangeValue:(CGFloat)value
 {
+    
     CGFloat zoomValue = MIN([_overlayView currentZoomValue] + value, 1.0);
     zoomValue = MAX(zoomValue, 0);
     [_cameraManager setZoomValue:zoomValue];
@@ -113,9 +126,12 @@
         if ([_overlayView prepareToRecording]) {
             dispatch_async(dispatch_get_global_queue(0, 0), ^{
                 [_cameraManager startRecording];
+                [self startRecordingTimer];
             });
+            
         } else {
             [_cameraManager stopRecording];
+            [self endRecordingTimer];
         }
     }
 }
@@ -163,7 +179,12 @@
     if ([_cameraManager switchCamera]) {
         [_overlayView switchDeviceMode:[_cameraManager deviceMode]];
         _previewView.enableExpose = [_cameraManager isCameraExposureSupported];
-        _previewView.enableFoucs = [_cameraManager isCameraFocusSupported];
+        if (_cameraManager.deviceMode == CXDeviceModeFront) {
+            _previewView.enableZoom = NO;
+        } else {
+            _previewView.enableZoom = YES;
+        }
+        
     }
 }
 
@@ -176,6 +197,7 @@
         }
         [_cameraManager rampZoomToValue:zoom];
     }
+    [self endZoomSliderTimer];
 }
 
 - (void)didTouchUpInsideToCameraZoomType:(CXCameraZoomType)zoomType
@@ -183,6 +205,16 @@
     if ([_cameraManager isCameraZoomSupported]) {
         [_cameraManager cancelZoom];
     }
+    [self startZoomSliderTimer];
+}
+
+- (void)didTouchDownZoomSliderView:(CXOverlayView *)overlayView
+{
+    [self endZoomSliderTimer];
+}
+- (void)didTouchUpInsideZoomSliderView:(CXOverlayView *)overlayView
+{
+    [self startZoomSliderTimer];
 }
 
 - (void)sliderChangeToValue:(CGFloat)zoomValue
@@ -211,6 +243,52 @@
     _overlayView = overlayView;
 }
 
+- (void)startZoomSliderTimer
+{
+    [self endZoomSliderTimer];
+    __weak typeof(self) weakSelf = self;
+    _zoomSliderTimer = [NSTimer cx_scheduledTimerWithTimeInterval:kCXCameraHidenZoomSliderTimeInterval
+    fireBlock:^{
+        [weakSelf.overlayView setZoomSliderHiden:YES];
+    }];
+    [[NSRunLoop mainRunLoop] addTimer:_zoomSliderTimer forMode:NSRunLoopCommonModes];
+}
+
+- (void)endZoomSliderTimer
+{
+    [_zoomSliderTimer invalidate];
+    _zoomSliderTimer = nil;
+}
+
+- (void)startRecordingTimer
+{
+    [self endRecordingTimer];
+    __weak typeof(self) weakSelf = self;
+    _recordingTimer = [NSTimer cx_timerWithTimeInterval:kCXCameraRecordingTimeInterval
+                                                         repeats:YES
+    fireBlock:^{
+        NSString *formattedTime = [weakSelf formatRecordedTime:[weakSelf.cameraManager recordedDuration]];
+        [weakSelf.overlayView setRecordingFormattedTime:formattedTime];
+    }];
+    [[NSRunLoop mainRunLoop] addTimer:_recordingTimer forMode:NSRunLoopCommonModes];
+
+}
+
+
+- (void)endRecordingTimer
+{
+    [_recordingTimer invalidate];
+    _recordingTimer = nil;
+}
+
+- (NSString *)formatRecordedTime:(NSTimeInterval)interval
+{
+    NSInteger hours = interval / 3600;
+    NSInteger minutes = (int)(interval / 60) % 60;
+    NSInteger seconds = (int)interval % 60;
+    return [NSString stringWithFormat:@"%02zd:%02zd:%02zd",hours,minutes,seconds];
+}
+
 
 #pragma mark - CXCameraManagerDelegate
 
@@ -219,6 +297,16 @@
     [_overlayView updateZoomValue:zoomValue];
 }
 
+- (void)previewViewWillBeginPinch:(CXPreviewView *)previewView
+{
+    [self endZoomSliderTimer];
+    [_overlayView setZoomSliderHiden:NO];
+}
+
+- (void)previewViewDidEndPinch:(CXPreviewView *)previewView
+{
+    [self startZoomSliderTimer];
+}
 
 - (void)captureSessionConfigurateError:(NSError *)error
 {
@@ -238,6 +326,11 @@
     [alertView show];
 }
 
+- (void)dealloc
+{
+    [self endZoomSliderTimer];
+    [self endRecordingTimer];
+}
 
 
 @end

@@ -18,9 +18,16 @@
  *
  *  @return
  */
-+ (instancetype)scheduledTimerWithTimeInterval:(NSTimeInterval)seconds fireBlock:(CXTimerFireBlock)block
++ (instancetype)cx_scheduledTimerWithTimeInterval:(NSTimeInterval)seconds fireBlock:(CXTimerFireBlock)block
 {
-    return [self scheduledTimerWithTimeInterval:seconds repeats:NO fireBlock:block];
+    if (!block) return nil;
+    return [self cx_scheduledTimerWithTimeInterval:seconds repeats:NO fireBlock:block];
+}
+
++ (instancetype)cx_timerWithTimeInterval:(NSTimeInterval)seconds fireBlock:(CXTimerFireBlock)block
+{
+    if (!block) return nil;
+    return [self cx_timerWithTimeInterval:seconds repeats:NO fireBlock:block];
 }
 
 /**
@@ -32,11 +39,29 @@
  *
  *  @return
  */
-+ (instancetype)scheduledTimerWithTimeInterval:(NSTimeInterval)seconds repeats:(BOOL)repeats fireBlock:(CXTimerFireBlock)block;
++ (instancetype)cx_scheduledTimerWithTimeInterval:(NSTimeInterval)seconds repeats:(BOOL)repeats fireBlock:(CXTimerFireBlock)block;
 {
-    id fireBlock = [block copy];
-    return [NSTimer scheduledTimerWithTimeInterval:seconds target:self selector:@selector(timerFire:) userInfo:fireBlock repeats:repeats];
+    if (!block) return nil;
+    return [NSTimer scheduledTimerWithTimeInterval:seconds
+                                            target:self
+                                          selector:@selector(timerFire:)
+                                          userInfo:[block copy]
+                                           repeats:repeats];
 }
+
+
+
++ (instancetype)cx_timerWithTimeInterval:(NSTimeInterval)seconds repeats:(BOOL)repeats fireBlock:(CXTimerFireBlock)block
+{
+    if (!block) return nil;
+    return [NSTimer timerWithTimeInterval:seconds
+                                   target:self
+                                 selector:@selector(timerFire:)
+                                 userInfo:[block copy]
+                                  repeats:repeats];
+}
+
+
 
 
 + (void)timerFire:(NSTimer *)timer
@@ -44,5 +69,20 @@
     CXTimerFireBlock block = timer.userInfo;
     block();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @end

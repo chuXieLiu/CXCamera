@@ -22,12 +22,14 @@
 - (IBAction)showPhotoCamera:(id)sender {
     CXCameraViewController *cameraVC = [[CXCameraViewController alloc] init];
     cameraVC.cameraMode = CXCameraModePhoto;
+    cameraVC.automaticWriteToLibary = YES;
     [self presentViewController:cameraVC animated:YES completion:nil];
 }
 
 - (IBAction)showVideoCamera:(id)sender {
     CXCameraViewController *cameraVC = [[CXCameraViewController alloc] init];
     cameraVC.cameraMode = CXCameraModeVideo;
+    cameraVC.automaticWriteToLibary = YES;
     [self presentViewController:cameraVC animated:YES completion:nil];
 }
 

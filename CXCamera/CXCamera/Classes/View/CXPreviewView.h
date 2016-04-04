@@ -20,6 +20,8 @@
  *  value：相对于上次pinch的scale的差值
  */
 - (void)previewView:(CXPreviewView *)preivewView pinchScaleChangeValue:(CGFloat)value;
+- (void)previewViewWillBeginPinch:(CXPreviewView *)previewView;
+- (void)previewViewDidEndPinch:(CXPreviewView *)previewView;
 
 @end
 
@@ -27,9 +29,11 @@
 @interface CXPreviewView : UIView
 
 // 是否允许对焦
-@property (nonatomic,assign) BOOL enableFoucs;
+//@property (nonatomic,assign) BOOL enableFoucs;
 // 是否允许曝光
 @property (nonatomic,assign) BOOL enableExpose;
+// 是否允许缩放
+@property (nonatomic,assign) BOOL enableZoom;
 
 @property (nonatomic,weak) id<CXPreviewViewDelegate> delegate;
 

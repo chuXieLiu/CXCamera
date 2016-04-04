@@ -9,6 +9,8 @@
 #import "CXCameraStatusView.h"
 #import "UIView+CXExtension.h"
 
+static const CGFloat kCXCameraStatusTimeLabelWidth = 100.0f;
+
 @implementation CXCameraStatusView
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -31,6 +33,10 @@
     _switchButton.right = self.width - _flashButton.left;
     _switchButton.top = 0.f;
     _switchButton.size = _flashButton.size;
+    
+    _timeLabel.centerX = self.width * 0.5;
+    _timeLabel.centerY = self.height * 0.5;
+    _timeLabel.size = CGSizeMake(kCXCameraStatusTimeLabelWidth, self.height);
 }
 
 - (void)setup
@@ -48,6 +54,17 @@
                   forState:UIControlStateNormal];
     [self addSubview:switchButton];
     _switchButton = switchButton;
+    
+    UILabel *timeLabel = [[UILabel alloc] init];
+    timeLabel.font = [UIFont systemFontOfSize:17.0f];
+    timeLabel.textColor = [UIColor whiteColor];
+    timeLabel.textAlignment = NSTextAlignmentCenter;
+    timeLabel.backgroundColor = [UIColor clearColor];
+    timeLabel.text = @"00:00:00";
+    [timeLabel sizeToFit];
+    [self addSubview:timeLabel];
+    _timeLabel = timeLabel;
+    
 }
 
 @end

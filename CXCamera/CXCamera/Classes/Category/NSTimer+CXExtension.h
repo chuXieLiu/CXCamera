@@ -13,18 +13,21 @@ typedef void(^CXTimerFireBlock)();
 @interface NSTimer (CXExtension)
 
 /**
- *  创建不重复执行定时器
+ *  创建不重复执行定时器，只会在当前的runLoop调度
  *
  *  @param seconds 执行时间段
  *  @param block   回调块
  *
  *  @return
  */
-+ (instancetype)scheduledTimerWithTimeInterval:(NSTimeInterval)seconds
++ (instancetype)cx_scheduledTimerWithTimeInterval:(NSTimeInterval)seconds
                                      fireBlock:(CXTimerFireBlock)block;
 
++ (instancetype)cx_timerWithTimeInterval:(NSTimeInterval)seconds
+                               fireBlock:(CXTimerFireBlock)block;
+
 /**
- *  创建定时器
+ *  创建定时器，只会在当前的runLoop调度
  *
  *  @param seconds 执行时间段
  *  @param repeats 是否重复执行
@@ -32,8 +35,10 @@ typedef void(^CXTimerFireBlock)();
  *
  *  @return
  */
-+ (instancetype)scheduledTimerWithTimeInterval:(NSTimeInterval)seconds
++ (instancetype)cx_scheduledTimerWithTimeInterval:(NSTimeInterval)seconds
                                        repeats:(BOOL)repeats
                                      fireBlock:(CXTimerFireBlock)block;
+
++ (instancetype)cx_timerWithTimeInterval:(NSTimeInterval)seconds repeats:(BOOL)repeats fireBlock:(CXTimerFireBlock)block;
 
 @end

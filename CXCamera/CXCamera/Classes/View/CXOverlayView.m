@@ -91,21 +91,45 @@ static const CGFloat kCXCameraZoomSliderHeight = 40.0f;
     } else {
         _cameraStatusView.flashButton.hidden = NO;
     }
+    [self setZoomSliderHiden:YES];
 }
 
 - (BOOL)prepareToRecording
 {
+    _cameraStatusView.switchButton.userInteractionEnabled = NO;
     return _cameraModeView.shutterButton.isSelected;
+}
+
+- (void)endRedording
+{
+    _cameraStatusView.switchButton.userInteractionEnabled = YES;
+    _cameraStatusView.timeLabel.text = @"00:00:00";
+}
+
+- (void)setRecordingFormattedTime:(NSString *)formattedTime
+{
+    _cameraStatusView.timeLabel.text = formattedTime;
 }
 
 - (void)setCameraMode:(CXCameraMode)cameraMode
 {
     _cameraMode = cameraMode;
-    if (cameraMode ==CXCameraModePhoto) {
-        _cameraModeView.shutterButton.shutterButtonMode = CXShutterButtonModePhoto;
-    } else {
-        _cameraModeView.shutterButton.shutterButtonMode = CXShutterButtonModeVideo;
-    }
+    
+    BOOL isCameraModePhoto = cameraMode ==CXCameraModePhoto;
+    
+    UIColor *toColor = isCameraModePhoto ? [UIColor blackColor] : [UIColor colorWithWhite:0 alpha:0.4];
+    _cameraStatusView.backgroundColor = toColor;
+    _cameraModeView.backgroundColor = toColor;
+    
+    CXShutterButtonMode shutterButtonMode = isCameraModePhoto ? CXShutterButtonModePhoto : CXShutterButtonModeVideo;
+    _cameraModeView.shutterButton.shutterButtonMode = shutterButtonMode;
+    
+    _cameraStatusView.timeLabel.hidden = isCameraModePhoto;
+}
+
+- (void)setZoomSliderHiden:(BOOL)hiden
+{
+    _zoomSlider.hidden = hiden;
 }
 
 
@@ -145,9 +169,14 @@ static const CGFloat kCXCameraZoomSliderHeight = 40.0f;
     [self addSubview:cameraStatusView];
     _cameraStatusView = cameraStatusView;
     
+    
+    
+    
     CXCameraZoomSlider *zoomSlider = [[CXCameraZoomSlider alloc] init];
     [self addSubview:zoomSlider];
     _zoomSlider = zoomSlider;
+    _zoomSlider.hidden = YES;
+    
     
     
     [_cameraStatusView.flashButton addTarget:self
@@ -174,11 +203,13 @@ static const CGFloat kCXCameraZoomSliderHeight = 40.0f;
     
     [_zoomSlider.plusButton addTarget:self action:@selector(touchUpInsideZoomPlus:) forControlEvents:UIControlEventTouchUpInside];
     
+    [_zoomSlider.slider addTarget:self action:@selector(touchDownZoomSliderView:) forControlEvents:UIControlEventTouchDown];
+    
+    [_zoomSlider.slider addTarget:self action:@selector(touchUpInsideZoomSliderView:) forControlEvents:UIControlEventTouchUpInside];
     
     [_zoomSlider.slider addTarget:self action:@selector(sliderValueChange:) forControlEvents:UIControlEventValueChanged];
     
 }
-
 
 
 #pragma mark - target event
@@ -250,6 +281,21 @@ static const CGFloat kCXCameraZoomSliderHeight = 40.0f;
 {
     if ([_delegate respondsToSelector:@selector(sliderChangeToValue:)]) {
         [_delegate sliderChangeToValue:sender.value];
+    }
+}
+
+
+- (void)touchDownZoomSliderView:(UISlider *)sender
+{
+    if ([_delegate respondsToSelector:@selector(didTouchDownZoomSliderView:)]) {
+        [_delegate didTouchDownZoomSliderView:self];
+    }
+}
+
+- (void)touchUpInsideZoomSliderView:(UISlider *)sender
+{
+    if ([_delegate respondsToSelector:@selector(didTouchUpInsideZoomSliderView:)]) {
+        [_delegate didTouchUpInsideZoomSliderView:self];
     }
 }
 

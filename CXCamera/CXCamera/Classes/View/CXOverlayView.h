@@ -29,6 +29,8 @@ typedef enum : NSUInteger {
 
 - (void)didtouchDownToCameraZoomType:(CXCameraZoomType)zoomType;
 - (void)didTouchUpInsideToCameraZoomType:(CXCameraZoomType)zoomType;
+- (void)didTouchDownZoomSliderView:(CXOverlayView *)overlayView;
+- (void)didTouchUpInsideZoomSliderView:(CXOverlayView *)overlayView;
 - (void)sliderChangeToValue:(CGFloat)zoomValue;
 
 @end
@@ -45,7 +47,10 @@ typedef enum : NSUInteger {
 
 // 准备录制视频
 - (BOOL)prepareToRecording;
+- (void)endRedording;
+- (void)setRecordingFormattedTime:(NSString *)formattedTime;
 
+- (void)setZoomSliderHiden:(BOOL)hiden;
 - (void)updateZoomValue:(CGFloat)zoomValue;
 - (CGFloat)currentZoomValue;
 

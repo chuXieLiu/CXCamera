@@ -128,15 +128,7 @@ static NSString *kCXCameraRampingVideoZoomContext;
         [_session addOutput:_movieOutput];
     }
     
-    // 监听缩放值
-    [_videoInput.device addObserver:self
-                         forKeyPath:KCXCameraDeviceInputPropertyVideoZoomFactor
-                            options:NSKeyValueObservingOptionNew
-                            context:&kCXCameraVideoZoomFactorContext];
-    [_videoInput.device addObserver:self
-                         forKeyPath:KCXCameraDeviceInputPropertyRampingVideoZoom
-                            options:NSKeyValueObservingOptionNew
-                            context:&kCXCameraRampingVideoZoomContext];
+    [self addZoomFactorObserver];
     
     
     return YES;
@@ -206,13 +198,28 @@ static NSString *kCXCameraRampingVideoZoomContext;
         // 添加新的视频捕捉对象
         if ([_session canAddInput:videoInput]) {
             [_session addInput:videoInput];
-            _videoInput = videoInput;
+            
+            // 切换到前置摄像机的时候移除监听
+            if (_videoInput.device.position == AVCaptureDevicePositionBack) {
+                [self removeZoomFactorObserver];    // 移除旧的
+            }
+            
+            _videoInput = videoInput;   // 覆盖旧的
+            
+            if (_videoInput.device.position == AVCaptureDevicePositionBack) {
+                [self addZoomFactorObserver];   // 为新的添加
+            }
+            
+            
+            
         } else {
             [_session addInput:_videoInput];
         }
     
     // 配置完成，系统会分批整合所有变更
         [_session commitConfiguration];
+        
+        
     } else {
         if ([_delegate respondsToSelector:@selector(cameraManagerConfigurateFailed:)]) {
             [_delegate cameraManagerConfigurateFailed:error];
@@ -224,6 +231,7 @@ static NSString *kCXCameraRampingVideoZoomContext;
         _deviceMode = CXDeviceModeBack;
     } else {
         _deviceMode = CXDeviceModeFront;
+        
     }
     
     return YES;
@@ -520,6 +528,34 @@ static NSString *kCXCameraRampingVideoZoomContext;
         if ([_delegate respondsToSelector:@selector(cameraManagerConfigurateFailed:)]) {
             [_delegate cameraManagerConfigurateFailed:error];
         }
+    }
+}
+
+#pragma mark - 缩放监听
+
+- (void)addZoomFactorObserver
+{
+    // 监听缩放值
+    [_videoInput.device addObserver:self
+                         forKeyPath:KCXCameraDeviceInputPropertyVideoZoomFactor
+                            options:NSKeyValueObservingOptionNew
+                            context:&kCXCameraVideoZoomFactorContext];
+    [_videoInput.device addObserver:self
+                         forKeyPath:KCXCameraDeviceInputPropertyRampingVideoZoom
+                            options:NSKeyValueObservingOptionNew
+                            context:&kCXCameraRampingVideoZoomContext];
+}
+
+- (void)removeZoomFactorObserver
+{
+    if (_deviceMode == CXDeviceModeBack) {
+        [_videoInput.device removeObserver:self
+                                forKeyPath:KCXCameraDeviceInputPropertyVideoZoomFactor
+                                   context:&kCXCameraVideoZoomFactorContext];
+        
+        [_videoInput.device removeObserver:self
+                                forKeyPath:KCXCameraDeviceInputPropertyRampingVideoZoom
+                                   context:&kCXCameraRampingVideoZoomContext];
     }
 }
 
@@ -843,23 +879,7 @@ static NSString *kCXCameraRampingVideoZoomContext;
 
 - (void)dealloc
 {
-    [_videoInput.device removeObserver:self
-                            forKeyPath:KCXCameraDeviceInputPropertyVideoZoomFactor
-                               context:&kCXCameraVideoZoomFactorContext];
-    
-    [_videoInput.device removeObserver:self
-                            forKeyPath:KCXCameraDeviceInputPropertyRampingVideoZoom
-                               context:&kCXCameraRampingVideoZoomContext];
-    if (_session) {
-        [self stopSession];
-        _session = nil;
-    }
-    _videoInput = nil;
-    _audioInput = nil;
-    _imageOutput = nil;
-    _movieOutput = nil;
-    _movieOutputURL = nil;
-    
+    [self removeZoomFactorObserver];
 }
 
 
