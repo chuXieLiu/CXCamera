@@ -33,13 +33,13 @@ static const CGFloat kCXCancelButtonHeight = 44.0f;
     [super layoutSubviews];
     
     
-    _shutterButton.centerX = self.width *0.5;
-    _shutterButton.bottom = self.height - kCXCameraModeViewBottomMargin;
-    _shutterButton.size = CGSizeMake(kCXShutterButtonWidth, kCXShutterButtonHeight);
+    self.shutterButton.centerX = self.width *0.5;
+    self.shutterButton.bottom = self.height - kCXCameraModeViewBottomMargin;
+    self.shutterButton.size = CGSizeMake(kCXShutterButtonWidth, kCXShutterButtonHeight);
     
-    _cancelButton.left = 5.0f;
-    _cancelButton.centerY = _shutterButton.centerY;
-    _cancelButton.size = CGSizeMake(kCXCancelButtonWidth, kCXCancelButtonHeight);
+    self.cancelButton.left = 5.0f;
+    self.cancelButton.centerY = self.shutterButton.centerY;
+    self.cancelButton.size = CGSizeMake(kCXCancelButtonWidth, kCXCancelButtonHeight);
 }
 
 
@@ -51,12 +51,12 @@ static const CGFloat kCXCancelButtonHeight = 44.0f;
     [cancelButton setImage:[UIImage imageNamed:@"icon_cancel_white"]
                   forState:UIControlStateNormal];
     [self addSubview:cancelButton];
-    _cancelButton = cancelButton;
+    self.cancelButton = cancelButton;
     
     
     CXShutterButton *shutterButton = [[CXShutterButton alloc] initWithMode:CXShutterButtonModeVideo];
     [self addSubview:shutterButton];
-    _shutterButton = shutterButton;
+    self.shutterButton = shutterButton;
 }
 
 @end

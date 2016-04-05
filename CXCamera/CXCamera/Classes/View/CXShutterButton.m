@@ -47,7 +47,7 @@ static const CGFloat kCXShuterButtonAnimationDuration = 0.2f;
 
 - (void)drawRect:(CGRect)rect
 {
-    if (!_circleLayer) {
+    if (!self.circleLayer) {
         [self drawCircle];
     }
     // 获取上下文
@@ -76,19 +76,19 @@ static const CGFloat kCXShuterButtonAnimationDuration = 0.2f;
     } else {
         animation.toValue = @1.0f;
     }
-    _circleLayer.opacity = [animation.toValue floatValue];
-    [_circleLayer addAnimation:animation forKey:nil];
+    self.circleLayer.opacity = [animation.toValue floatValue];
+    [self.circleLayer addAnimation:animation forKey:nil];
 }
 
 - (void)setSelected:(BOOL)selected
 {
     [super setSelected:selected];
-    if (_shutterButtonMode == CXShutterButtonModeVideo) {
+    if (self.shutterButtonMode == CXShutterButtonModeVideo) {
         CABasicAnimation *scaleAnimation = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
         
         CABasicAnimation *radiuAnimation = [CABasicAnimation animationWithKeyPath:@"cornerRadius"];
         
-        CGFloat width = _circleLayer.bounds.size.width;
+        CGFloat width = self.circleLayer.bounds.size.width;
         
         if (selected) {
             scaleAnimation.toValue = @0.6f;
@@ -105,9 +105,9 @@ static const CGFloat kCXShuterButtonAnimationDuration = 0.2f;
                              ];
         group.beginTime = CACurrentMediaTime() + kCXShuterButtonAnimationDuration;
         group.duration = 0.35f;
-        [_circleLayer setValue:scaleAnimation.toValue forKeyPath:@"transform.scale"];
-        [_circleLayer setValue:radiuAnimation.toValue forKeyPath:@"cornerRadius"];
-        [_circleLayer addAnimation:group forKey:nil];
+        [self.circleLayer setValue:scaleAnimation.toValue forKeyPath:@"transform.scale"];
+        [self.circleLayer setValue:radiuAnimation.toValue forKeyPath:@"cornerRadius"];
+        [self.circleLayer addAnimation:group forKey:nil];
     }
 }
 
@@ -116,8 +116,8 @@ static const CGFloat kCXShuterButtonAnimationDuration = 0.2f;
 - (void)setShutterButtonMode:(CXShutterButtonMode)shutterButtonMode
 {
     _shutterButtonMode = shutterButtonMode;
-    UIColor *circleColor = _shutterButtonMode == CXShutterButtonModeVideo ? [UIColor redColor] : [UIColor whiteColor];
-    _circleLayer.backgroundColor = circleColor.CGColor;
+    UIColor *circleColor = self.shutterButtonMode == CXShutterButtonModeVideo ? [UIColor redColor] : [UIColor whiteColor];
+    self.circleLayer.backgroundColor = circleColor.CGColor;
 
 }
 
@@ -130,7 +130,7 @@ static const CGFloat kCXShuterButtonAnimationDuration = 0.2f;
 
 - (void)drawCircle
 {
-    UIColor *circleColor = _shutterButtonMode == CXShutterButtonModeVideo ? [UIColor redColor] : [UIColor whiteColor];
+    UIColor *circleColor = self.shutterButtonMode == CXShutterButtonModeVideo ? [UIColor redColor] : [UIColor whiteColor];
     // 画圆
     CALayer *circleLayer = [CALayer layer];
     circleLayer.backgroundColor = circleColor.CGColor;
@@ -140,7 +140,7 @@ static const CGFloat kCXShuterButtonAnimationDuration = 0.2f;
     circleLayer.position = self.cx_center;
     circleLayer.cornerRadius = circleLayer.bounds.size.width * 0.5;
     [self.layer addSublayer:circleLayer];
-    _circleLayer = circleLayer;
+    self.circleLayer = circleLayer;
 }
 
 

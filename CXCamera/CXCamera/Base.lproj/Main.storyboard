@@ -52,10 +52,13 @@
                             <constraint firstItem="1iB-tK-J0I" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="pju-5T-i1t"/>
                         </constraints>
                     </view>
+                    <navigationItem key="navigationItem" id="2Fn-hc-P4d">
+                        <barButtonItem key="leftBarButtonItem" title="好的" id="UnM-mT-dsd"/>
+                    </navigationItem>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="337" y="186"/>
+            <point key="canvasLocation" x="1149" y="186"/>
         </scene>
     </scenes>
 </document>

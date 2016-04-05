@@ -31,14 +31,14 @@
 {
     [super layoutSubviews];
     
-    _subtractButton.origin = CGPointMake(0, 0);
-    _subtractButton.size = CGSizeMake(self.height, self.height);
+    self.subtractButton.origin = CGPointMake(0, 0);
+    self.subtractButton.size = CGSizeMake(self.height, self.height);
     
-    _plusButton.size = CGSizeMake(self.height, self.height);
-    _plusButton.origin = CGPointMake(self.width - _plusButton.width, 0);
+    self.plusButton.size = CGSizeMake(self.height, self.height);
+    self.plusButton.origin = CGPointMake(self.width - self.plusButton.width, 0);
     
-    _slider.center = CGPointMake(self.width * 0.5, self.height * 0.5);
-    _slider.width = self.width - 2 * _subtractButton.width;
+    self.slider.center = CGPointMake(self.width * 0.5, self.height * 0.5);
+    self.slider.width = self.width - 2 * self.subtractButton.width;
 }
 
 
@@ -47,12 +47,12 @@
     UIButton *plusButton = [[UIButton alloc] init];
     [plusButton setImage:[UIImage imageNamed:@"icon_camera_plus"] forState:UIControlStateNormal];
     [self addSubview:plusButton];
-    _plusButton = plusButton;
+    self.plusButton = plusButton;
     
     UIButton *substractButton = [[UIButton alloc] init];
     [substractButton setImage:[UIImage imageNamed:@"icon_camera_subtract"] forState:UIControlStateNormal];
     [self addSubview:substractButton];
-    _subtractButton = substractButton;
+    self.subtractButton = substractButton;
     
     UISlider *slider = [[UISlider alloc] init];
     slider.value = 0;
@@ -60,7 +60,7 @@
     slider.maximumValue = 1.0f;
     [slider setThumbImage:[UIImage imageNamed:@"slider_handle"] forState:UIControlStateNormal];
     [self addSubview:slider];
-    _slider = slider;
+    self.slider = slider;
 
 }
 

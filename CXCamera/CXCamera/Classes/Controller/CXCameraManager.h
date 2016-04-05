@@ -43,6 +43,9 @@
 @property (nonatomic,weak) id<CXCameraManagerDelegate> delegate;
 
 @property (nonatomic,assign,readonly) CXDeviceMode deviceMode;
+
+@property (nonatomic,assign) CXCameraMode cameraMode;
+
 // 会话
 @property (nonatomic,strong,readonly) AVCaptureSession *session;
 // 自动写入资源

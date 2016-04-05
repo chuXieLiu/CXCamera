@@ -59,6 +59,7 @@ static NSString *kCXCameraRampingVideoZoomContext;
 {
     self = [super init];
     if (self) {
+
         _automaticWriteToLibary = YES;
         NSError *error;
         
@@ -715,7 +716,12 @@ static NSString *kCXCameraRampingVideoZoomContext;
             [_delegate cameraManagerToSavedPhotosAlbumFailed:outputFileURL error:error];
         }
     } else {
-        [self saveVideoToLibrary:[_movieOutputURL copy]];
+        if ([_delegate respondsToSelector:@selector(cameraManagerDidSuccessedReocrdedVideo:recordedDuration:)]) {
+            [_delegate cameraManagerDidSuccessedReocrdedVideo:[_movieOutputURL copy] recordedDuration:[self recordedDuration]];
+        }
+        if (self.automaticWriteToLibary) {
+            [self saveVideoToLibrary:[_movieOutputURL copy]];
+        }
     }
     _movieOutputURL = nil;
 }
@@ -780,6 +786,27 @@ static NSString *kCXCameraRampingVideoZoomContext;
                 }
             }
         }];
+    } 
+}
+
+- (void)saveVideoToLibrary:(NSURL *)movieURL
+{
+    if ([self authorizeAssetsLibrary]) {
+        ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+        // 检查视频是否可以写入
+        if ([library videoAtPathIsCompatibleWithSavedPhotosAlbum:movieURL]) {
+            [library writeVideoAtPathToSavedPhotosAlbum:movieURL completionBlock:^(NSURL *assetURL, NSError *error) {
+                if (!error) {
+                    if ([_delegate respondsToSelector:@selector(cameraManagerToSavedPhotosAlbumSuccessed:)]) {
+                        [_delegate cameraManagerToSavedPhotosAlbumSuccessed:movieURL];
+                    }
+                } else {
+                    if ([_delegate respondsToSelector:@selector(cameraManagerToSavedPhotosAlbumFailed:error:)]) {
+                        [_delegate cameraManagerToSavedPhotosAlbumFailed:movieURL error:error];
+                    }
+                }
+            }];
+        }
     }
 }
 
@@ -804,26 +831,7 @@ static NSString *kCXCameraRampingVideoZoomContext;
     }
 }
 
-- (void)saveVideoToLibrary:(NSURL *)movieURL
-{
-    if ([self authorizeAssetsLibrary]) {
-        ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-        // 检查视频是否可以写入
-        if ([library videoAtPathIsCompatibleWithSavedPhotosAlbum:movieURL]) {
-            [library writeVideoAtPathToSavedPhotosAlbum:movieURL completionBlock:^(NSURL *assetURL, NSError *error) {
-                if (!error) {
-                    if ([_delegate respondsToSelector:@selector(cameraManagerToSavedPhotosAlbumSuccessed:)]) {
-                        [_delegate cameraManagerToSavedPhotosAlbumSuccessed:movieURL];
-                    }
-                } else {
-                    if ([_delegate respondsToSelector:@selector(cameraManagerToSavedPhotosAlbumFailed:error:)]) {
-                        [_delegate cameraManagerToSavedPhotosAlbumFailed:movieURL error:error];
-                    }
-                }
-            }];
-        }
-    }
-}
+
 
 - (void)generateThumbImageWithMovieURL:(NSURL *)movieURL
 {
@@ -841,10 +849,6 @@ static NSString *kCXCameraRampingVideoZoomContext;
         
     });
 }
-
-
-
-
 
 
 - (NSUInteger)cameraCount

@@ -70,7 +70,7 @@ static NSString *kCXPopTableViewCellIdentifier = @"kCXPopTableViewCellIdentifier
         UIImageView *iconView = [[UIImageView alloc] init];
         iconView.userInteractionEnabled = YES;
         [self.contentView addSubview:iconView];
-        _iconView = iconView;
+        self.iconView = iconView;
     }
     return self;
 }
@@ -78,14 +78,14 @@ static NSString *kCXPopTableViewCellIdentifier = @"kCXPopTableViewCellIdentifier
 - (void)layoutSubviews
 {
     [super layoutSubviews];
-    _iconView.center = CGPointMake(self.width * 0.5, self.height * 0.5);
+    self.iconView.center = CGPointMake(self.width * 0.5, self.height * 0.5);
 }
 
 - (void)setItem:(CXPopItem *)item
 {
     _item = item;
-    [_iconView setImage:[UIImage imageNamed:item.imageName]];
-    [_iconView sizeToFit];
+    [self.iconView setImage:[UIImage imageNamed:item.imageName]];
+    [self.iconView sizeToFit];
 }
 
 @end
@@ -123,7 +123,7 @@ static NSString *kCXPopTableViewCellIdentifier = @"kCXPopTableViewCellIdentifier
     self = [super initWithFrame:CGRectZero];
     if (self) {
         
-        _items = items;
+        self.items = items;
         
         [self setupContent];
         
@@ -136,13 +136,13 @@ static NSString *kCXPopTableViewCellIdentifier = @"kCXPopTableViewCellIdentifier
 
 - (void)showFromView:(UIView *)from toView:(UIView *)to
 {
-    _showing = YES;
-    if (!_items || _items.count == 0) return;
+    self.showing = YES;
+    if (!self.items || self.items.count == 0) return;
     
     [from addSubview:self];
     self.frame = from.bounds;
     
-    NSInteger count = _items.count;
+    NSInteger count = self.items.count;
     CGRect toRect = [self convertRect:to.frame toView:self];
     
     
@@ -152,15 +152,15 @@ static NSString *kCXPopTableViewCellIdentifier = @"kCXPopTableViewCellIdentifier
     CGFloat contentY = CGRectGetMaxY(toRect);
     
 
-    _contentView.frame = CGRectMake(contentX, contentY, contentW, 0);
+    self.contentView.frame = CGRectMake(contentX, contentY, contentW, 0);
 
-    _imageView.frame = CGRectMake(0, 0, contentW, 0);
+    self.imageView.frame = CGRectMake(0, 0, contentW, 0);
     
-    _tableView.frame = CGRectMake(0, 0, contentW, 0);
+    self.tableView.frame = CGRectMake(0, 0, contentW, 0);
     
     self.userInteractionEnabled = NO;
     [UIView animateWithDuration:kCXFlashAnimationDuration delay:0 options:UIViewAnimationOptionCurveLinear animations:^{
-        _contentView.height = contentH;
+        self.contentView.height = contentH;
     } completion:^(BOOL finished) {
         self.userInteractionEnabled = YES;
     }];
@@ -173,9 +173,9 @@ static NSString *kCXPopTableViewCellIdentifier = @"kCXPopTableViewCellIdentifier
 {
     self.userInteractionEnabled = NO;
     [UIView animateWithDuration:kCXFlashAnimationDuration delay:0 options:UIViewAnimationOptionCurveLinear animations:^{
-        _contentView.height = 0.f;
+        self.contentView.height = 0.f;
     } completion:^(BOOL finished) {
-        _showing = NO;
+        self.showing = NO;
         self.userInteractionEnabled = YES;
         [self removeFromSuperview];
     }];
@@ -194,7 +194,7 @@ static NSString *kCXPopTableViewCellIdentifier = @"kCXPopTableViewCellIdentifier
     UIView *contentView = [[UIView alloc] initWithFrame:CGRectZero];
     contentView.backgroundColor = [UIColor clearColor];
     [self addSubview:contentView];
-    _contentView = contentView;
+    self.contentView = contentView;
 }
 
 - (void)setupBackground
@@ -207,9 +207,9 @@ static NSString *kCXPopTableViewCellIdentifier = @"kCXPopTableViewCellIdentifier
     image = [image resizableImageWithCapInsets:insets resizingMode:UIImageResizingModeStretch];
     imageView.image = image;
     imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [_contentView addSubview:imageView];
-    _imageView = imageView;
-    _imageView.userInteractionEnabled = YES;
+    [self.contentView addSubview:imageView];
+    self.imageView = imageView;
+    self.imageView.userInteractionEnabled = YES;
 
 }
 
@@ -225,8 +225,8 @@ static NSString *kCXPopTableViewCellIdentifier = @"kCXPopTableViewCellIdentifier
     tableView.contentInset = UIEdgeInsetsMake(kCXFlashPopOffset, 0, 0, 0);
     [tableView registerClass:[CXPopTableViewCell class] forCellReuseIdentifier:kCXPopTableViewCellIdentifier];
     tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [_contentView addSubview:tableView];
-    _tableView = tableView;
+    [self.contentView addSubview:tableView];
+    self.tableView = tableView;
     
 }
 
@@ -234,14 +234,14 @@ static NSString *kCXPopTableViewCellIdentifier = @"kCXPopTableViewCellIdentifier
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return _items.count;
+    return self.items.count;
 }
 
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     CXPopTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kCXPopTableViewCellIdentifier];
-    cell.item = _items[indexPath.row];
+    cell.item = self.items[indexPath.row];
     return cell;
 }
 
@@ -250,8 +250,8 @@ static NSString *kCXPopTableViewCellIdentifier = @"kCXPopTableViewCellIdentifier
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     [self dismiss];
-    if ([_delegate respondsToSelector:@selector(flashPopView:itemDidSelected:)]) {
-        [_delegate flashPopView:self itemDidSelected:_items[indexPath.row]];
+    if ([self.delegate respondsToSelector:@selector(flashPopView:itemDidSelected:)]) {
+        [self.delegate flashPopView:self itemDidSelected:self.items[indexPath.row]];
     }
 }
 

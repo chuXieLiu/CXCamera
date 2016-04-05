@@ -61,14 +61,14 @@ static const CGFloat kCXBoxBorderWidth = 2.0f;
 - (void)setEnableZoom:(BOOL)enableZoom
 {
     _enableZoom = enableZoom;
-    _pinchGesture.enabled = _enableZoom;
+    self.pinchGesture.enabled = self.enableZoom;
 }
 
 
 - (void)setEnableExpose:(BOOL)enableExpose
 {
     _enableExpose = enableExpose;
-    _singleTapGesture.enabled = _enableExpose;
+    self.singleTapGesture.enabled = self.enableExpose;
 }
 
 - (void)setSession:(AVCaptureSession *)session
@@ -81,22 +81,22 @@ static const CGFloat kCXBoxBorderWidth = 2.0f;
 /*
  - (void)handleSingleTap:(UITapGestureRecognizer *)gesture
  {
-    if (!_enableFoucs) return;
+    if (!self.enableFoucs) return;
     CGPoint point = [gesture locationInView:self];
-    [self showBox:_focusBox atPoint:point];
-    if ([_delegate respondsToSelector:@selector(previewView:singleTapAtPoint:)]) {
-        [_delegate previewView:self singleTapAtPoint:[self captureDevicePoint:point]];
+    [self showBox:self.focusBox atPoint:point];
+    if ([self.delegate respondsToSelector:@selector(previewView:singleTapAtPoint:)]) {
+        [self.delegate previewView:self singleTapAtPoint:[self captureDevicePoint:point]];
     }
  }*/
 
 
 - (void)handleSingleTap:(UITapGestureRecognizer *)gesture
 {
-    if (!_enableExpose) return;
+    if (!self.enableExpose) return;
     CGPoint point = [gesture locationInView:self];
     [self showBox:self.exposeBox atPoint:point];
-    if ([_delegate respondsToSelector:@selector(previewView:doubleTapAtPoint:)]) {
-        [_delegate previewView:self doubleTapAtPoint:[self captureDevicePoint:point]];
+    if ([self.delegate respondsToSelector:@selector(previewView:doubleTapAtPoint:)]) {
+        [self.delegate previewView:self doubleTapAtPoint:[self captureDevicePoint:point]];
     }
 }
 
@@ -104,26 +104,26 @@ static const CGFloat kCXBoxBorderWidth = 2.0f;
 {
     CGFloat value = 0.f;
     if (gesture.scale > 1) {    // scale递增
-        value = gesture.scale - _lastScale;
+        value = gesture.scale - self.lastScale;
     }
     if (gesture.scale < 1) {    // scale递增或递减
-        value = gesture.scale - _lastScale;
+        value = gesture.scale - self.lastScale;
     }
-    _lastScale = gesture.scale;
-    if ([_delegate respondsToSelector:@selector(previewView:pinchScaleChangeValue:)]) {
-        [_delegate previewView:self pinchScaleChangeValue:value];
+    self.lastScale = gesture.scale;
+    if ([self.delegate respondsToSelector:@selector(previewView:pinchScaleChangeValue:)]) {
+        [self.delegate previewView:self pinchScaleChangeValue:value];
     }
     UIGestureRecognizerState state = gesture.state;
     if (state == UIGestureRecognizerStateBegan) {
-        if ([_delegate respondsToSelector:@selector(previewViewWillBeginPinch:)]) {
-            [_delegate previewViewWillBeginPinch:self];
+        if ([self.delegate respondsToSelector:@selector(previewViewWillBeginPinch:)]) {
+            [self.delegate previewViewWillBeginPinch:self];
         }
     } else if (state == UIGestureRecognizerStateEnded  ||
         state == UIGestureRecognizerStateCancelled ||
         state == UIGestureRecognizerStateFailed) {
-        _lastScale = 1;
-        if ([_delegate respondsToSelector:@selector(previewViewDidEndPinch:)]) {
-            [_delegate previewViewDidEndPinch:self];
+        self.lastScale = 1;
+        if ([self.delegate respondsToSelector:@selector(previewViewDidEndPinch:)]) {
+            [self.delegate previewViewDidEndPinch:self];
         }
     }
 }
@@ -156,12 +156,12 @@ static const CGFloat kCXBoxBorderWidth = 2.0f;
     self.enableExpose = YES;
     self.enableZoom = YES;
     
-    _singleTapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
-    [self addGestureRecognizer:_singleTapGesture];
+    self.singleTapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
+    [self addGestureRecognizer:self.singleTapGesture];
     
-    _pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
-    [self addGestureRecognizer:_pinchGesture];
-    _lastScale = 1;
+    self.pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
+    [self addGestureRecognizer:self.pinchGesture];
+    self.lastScale = 1;
     
 }
 
