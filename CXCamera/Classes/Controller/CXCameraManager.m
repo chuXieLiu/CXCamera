@@ -624,7 +624,7 @@ static NSString *kCXCameraRampingVideoZoomContext;
         if ([device.activeFormat isVideoStabilizationModeSupported:AVCaptureVideoStabilizationModeAuto]) {
             NSString *version = [UIDevice currentDevice].systemVersion;
             if ([version integerValue] >= 8.0) {
-                videoConnection.preferredVideoStabilizationMode = AVCaptureVideoStabilizationModeOff;
+                videoConnection.preferredVideoStabilizationMode = AVCaptureVideoStabilizationModeAuto;
                 
             } else {
                 
