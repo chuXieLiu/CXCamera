@@ -14,7 +14,7 @@
 
 * 拍照
 
-![](https://github.com/chuXieLiu/CXCamera/blob/master/capturePhotoDemo.png?raw=true">)
+![](https://github.com/chuXieLiu/CXCamera/blob/master/capturePhotoDemo.png")
 
 * 录像
 
