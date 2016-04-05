@@ -47,6 +47,7 @@
     [CXCameraViewController showCameraWithDelegate:self
                                         cameraMode:CXCameraModePhoto
                             automaticWriteToLibary:NO];
+    
 }
 
 - (IBAction)showVideoCamera:(id)sender {

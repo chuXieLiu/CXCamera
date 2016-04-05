@@ -24,7 +24,7 @@
 /// 捕捉图片，image可能为空
 - (void)cameraViewController:(CXCameraViewController *)cameraVC didCaptureImage:(UIImage *)image;
 
-/// 捕捉图片，video可能为空
+/// 捕捉视频，video可能为空
 - (void)cameraViewController:(CXCameraViewController *)cameraVC didCaptureVideo:(NSURL *)videoURL;
 
 /// 自动保存图片结果
