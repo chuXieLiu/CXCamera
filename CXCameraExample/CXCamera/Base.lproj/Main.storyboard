@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10116" systemVersion="15E65" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="BYZ-38-t0r">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
+                        <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eAf-F7-Dac">
+                                <rect key="frame" x="270" y="214" width="60" height="44"/>
+                                <color key="backgroundColor" red="0.90196078430000004" green="0.53333333329999999" blue="0.12549019610000001" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="GqO-YF-4qe"/>
+                                    <constraint firstAttribute="width" constant="60" id="Ssx-EA-zWs"/>
+                                </constraints>
+                                <state key="normal" title="拍照">
+                                    <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="showPhotoCamera:" destination="BYZ-38-t0r" eventType="touchUpInside" id="qFZ-Xh-944"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1iB-tK-J0I">
+                                <rect key="frame" x="270" y="278" width="60" height="44"/>
+                                <color key="backgroundColor" red="0.90196078430000004" green="0.53333333329999999" blue="0.12549019610000001" alpha="1" colorSpace="calibratedRGB"/>
+                                <state key="normal" title="录像">
+                                    <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="showVideoCamera:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Eqh-kB-Ehn"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rjg-cM-iCb">
+                                <rect key="frame" x="166" y="407" width="46" height="46"/>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="1iB-tK-J0I" firstAttribute="top" secondItem="eAf-F7-Dac" secondAttribute="bottom" constant="20" id="C4t-hZ-71R"/>
+                            <constraint firstItem="1iB-tK-J0I" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="Iml-mb-B0l"/>
+                            <constraint firstItem="1iB-tK-J0I" firstAttribute="height" secondItem="eAf-F7-Dac" secondAttribute="height" id="NYC-6S-uG0"/>
+                            <constraint firstItem="eAf-F7-Dac" firstAttribute="centerX" secondItem="1iB-tK-J0I" secondAttribute="centerX" id="Uw7-u7-hzB"/>
+                            <constraint firstItem="1iB-tK-J0I" firstAttribute="width" secondItem="eAf-F7-Dac" secondAttribute="width" id="aS3-bk-zxi"/>
+                            <constraint firstItem="1iB-tK-J0I" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="pju-5T-i1t"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="2Fn-hc-P4d">
+                        <barButtonItem key="leftBarButtonItem" title="好的" id="UnM-mT-dsd"/>
+                    </navigationItem>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1149" y="186"/>
+        </scene>
+    </scenes>
+</document>
