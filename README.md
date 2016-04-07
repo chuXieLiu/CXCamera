@@ -18,12 +18,12 @@
 
 * 录像
 
-![](https://github.com/chuXieLiu/CXCamera/blob/master/capturePhotoDemo.png?raw=true">)
+![](https://github.com/chuXieLiu/CXCamera/blob/master/captureVideoDemo.png?raw=true">)
 
 
 * 播放录制的视频
 
-![](https://github.com/chuXieLiu/CXCamera/blob/master/capturePhotoDemo.png?raw=true">)
+![](https://github.com/chuXieLiu/CXCamera/blob/master/playVideoDemo.png?raw=true">)
 
 ###系统支持
 
@@ -72,7 +72,6 @@ CXCameraViewControllerDelegate 定义了可遵守的协议，
 * 发现问题，请您Issues Me，O(∩_∩)O 谢谢
 * 如果您有什么好的建议或需求请Email Me ^_^
 * Email ：c_xieliu@163.com
-
 
 
 
