@@ -43,10 +43,7 @@
 //    cameraVC.cameraMode = CXCameraModePhoto;
 //    cameraVC.automaticWriteToLibary = YES;
 //    [self presentViewController:cameraVC animated:YES completion:nil];
-    
-    [CXCameraViewController showCameraWithDelegate:self
-                                        cameraMode:CXCameraModePhoto
-                            automaticWriteToLibary:NO];
+    [CXCameraViewController presentPhotoCameraWithDelegate:self automaticWriteToLibary:YES];
     
 }
 
@@ -55,11 +52,11 @@
 //    CXCameraViewController *cameraVC = [[CXCameraViewController alloc] init];
 //    cameraVC.cameraMode = CXCameraModeVideo;
 //    cameraVC.automaticWriteToLibary = YES;
+//    cameraVC.maxRecordedDuration = 5;
 //    [self presentViewController:cameraVC animated:YES completion:nil];
     
-    [CXCameraViewController showCameraWithDelegate:self
-                                        cameraMode:CXCameraModeVideo
-                            automaticWriteToLibary:NO];
+    [CXCameraViewController presentVideoCameraWithDelegate:self maxRecordedDuration:10 automaticWriteToLibary:YES];
+
 }
 
 
@@ -68,42 +65,67 @@
 
 #pragma mark - CXCameraViewControllerDelegate
 
-/// 没有权限访问
+/**
+ *  没有权限访问涉嫌头
+ */
 - (void)cameraNoAccessForMedia
 {
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"" message:@"请前往系统设置->隐私->相机代开app访问权限" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"" message:@"请前往系统设置->隐私->相机打开app访问权限" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
     [alertView show];
 }
 
-/// 相机配置错误
+/**
+ *  没有权限访问相册
+ */
+- (void)cameraNoAccessForPhotosAlbum
+{
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"" message:@"请前往系统设置->隐私->照片打开app访问权限" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+    [alertView show];
+}
+
+/**
+ *  相机配置错误
+ */
 - (void)cameraDidConfigurateError:(NSError *)error
 {
-    NSLog(@"%@",error);
+    NSLog(@"cameraDidConfigurateError=%@",error);
 }
 
-/// 捕捉图片，image可能为空
-- (void)cameraViewController:(CXCameraViewController *)cameraVC didCaptureImage:(UIImage *)image
+/**
+ *  结束图片捕捉，当捕捉出错是image为空
+ */
+- (void)cameraViewController:(CXCameraViewController *)cameraVC didEndCaptureImage:(UIImage *)image error:(NSError *)error
 {
-    NSLog(@"%@",image);
+    NSLog(@"didEndCaptureImage:%@,%@",image,error);
 }
 
-/// 捕捉图片，video可能为空
-- (void)cameraViewController:(CXCameraViewController *)cameraVC didCaptureVideo:(NSURL *)videoURL
+/**
+ *  捕捉视频，当捕捉出错时video为空
+ */
+- (void)cameraViewController:(CXCameraViewController *)cameraVC didEndCaptureVideo:(NSURL *)videoURL error:(NSError *)error
 {
-    NSLog(@"%@",videoURL);
+    NSLog(@"didEndCaptureVideo:%@,%@",videoURL,error);
 }
 
-/// 自动保存图片结果
-- (void)cameraViewController:(CXCameraViewController *)cameraVC saveImage:(UIImage *)image isSuccessed:(BOOL)isSuccessed
+
+
+/**
+ *  自动保存图片回调
+ */
+- (void)cameraViewController:(CXCameraViewController *)cameraVC automaticWriteImageToPhotosAlbum:(UIImage *)image error:(NSError *)error
 {
-    NSLog(@"%d",isSuccessed);
+    NSLog(@"automaticWriteImageToPhotosAlbum:%@,%@",image,error);
 }
 
-/// 自动保存视频结果
-- (void)cameraViewController:(CXCameraViewController *)cameraVC saveVideo:(NSURL *)videoURL isSuccessed:(BOOL)isSuccessed
+/**
+ *  自动保存视频回调
+ */
+- (void)cameraViewController:(CXCameraViewController *)cameraVC automaticWriteVideoToPhotosAlbumAtPath:(NSURL *)videoURL error:(NSError *)error
 {
-    NSLog(@"%d",isSuccessed);
+    NSLog(@"automaticWriteVideoToPhotosAlbumAtPath:%@,%@",videoURL,error);
 }
+
+
 
 
 

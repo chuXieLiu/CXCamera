@@ -14,8 +14,10 @@
 // 是否正在调整曝光属性
 static NSString *kCXCameraDeviceInputPropertyAdjustingExposure = @"adjustingExposure";
 
+// 缩放值属性
 static NSString *KCXCameraDeviceInputPropertyVideoZoomFactor = @"videoZoomFactor";
 
+// 是否正在调整缩放值
 static NSString *KCXCameraDeviceInputPropertyRampingVideoZoom = @"rampingVideoZoom";
 
 // 最大缩放值
@@ -36,19 +38,18 @@ static NSString *kCXCameraRampingVideoZoomContext;
 
 /** 会话 */
 @property (nonatomic,strong) AVCaptureSession *session;
-
-@property (nonatomic,assign) BOOL sessionConfigurateSuccess;
 /** 视频捕捉 */
 @property (nonatomic,strong) AVCaptureDeviceInput *videoInput;
 /** 音频捕捉 */
 @property (nonatomic,strong) AVCaptureDeviceInput *audioInput;
 /** 捕捉静态图片 */
 @property (nonatomic,strong) AVCaptureStillImageOutput *imageOutput;
-/** 将电影写入到文件系统 */
+/** 将video写入到文件系统 */
 @property (nonatomic,strong) AVCaptureMovieFileOutput *movieOutput;
-
+/** video文件路径 */
 @property (nonatomic,strong) NSURL *movieOutputURL;
-
+/** session是否配置成功 */
+@property (nonatomic,assign) BOOL sessionConfigurateSuccess;
 
 @end
 
@@ -59,10 +60,7 @@ static NSString *kCXCameraRampingVideoZoomContext;
 {
     self = [super init];
     if (self) {
-
-        _automaticWriteToLibary = YES;
         NSError *error;
-        
         if ([self configurateSessionWithError:&error]) {
             _sessionConfigurateSuccess = YES;
             _deviceMode = CXDeviceModeBack;
@@ -72,7 +70,6 @@ static NSString *kCXCameraRampingVideoZoomContext;
             }
             _sessionConfigurateSuccess = NO;
         }
-        
     }
     return self;
 }
@@ -571,23 +568,26 @@ static NSString *kCXCameraRampingVideoZoomContext;
     if ([connection isVideoOrientationSupported]) {
         connection.videoOrientation = [self currentVideoOrientation];
     }
+    if ([self.delegate respondsToSelector:@selector(cameraManagerWillCaptureStillImage)]) {
+        [self.delegate cameraManagerWillCaptureStillImage];
+    }
     [_imageOutput captureStillImageAsynchronouslyFromConnection:connection
     completionHandler:^(CMSampleBufferRef imageDataSampleBuffer, NSError *error) {
         if (imageDataSampleBuffer != NULL) {
             NSData *imageData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageDataSampleBuffer];
             UIImage *image = [UIImage imageWithData:imageData];
-            if ([_delegate respondsToSelector:@selector(cameraManagerDidSuccessedCapturedStillImage:)]) {
-                [_delegate cameraManagerDidSuccessedCapturedStillImage:image];
-            }
-            if (_automaticWriteToLibary) {
-                [self saveImageToLibrary:image];
-            }
+            [self callBackCaptureStillImage:image error:nil];
         } else {
-            if ([_delegate respondsToSelector:@selector(cameraManagerDidFailedCapturedStillImage:)]) {
-                [_delegate cameraManagerDidFailedCapturedStillImage:error];
-            }
+            [self callBackCaptureStillImage:nil error:error];
         }
     }];
+}
+
+- (void)callBackCaptureStillImage:(UIImage *)image error:(NSError *)error
+{
+    if ([self.delegate respondsToSelector:@selector(cameraManagerDidEndCaptureStillImage:error:)]) {
+        [_delegate cameraManagerDidEndCaptureStillImage:image error:error];
+    }
 }
 
 /**
@@ -605,40 +605,28 @@ static NSString *kCXCameraRampingVideoZoomContext;
 {
     if (![self isRecording]) {
 
-        AVCaptureConnection *videoConnection = [_movieOutput connectionWithMediaType:AVMediaTypeVideo];
+        AVCaptureConnection *videoConnection = [self.movieOutput connectionWithMediaType:AVMediaTypeVideo];
         
         if ([videoConnection isVideoOrientationSupported]) {
             videoConnection.videoOrientation = [self currentVideoOrientation];
         }
         
-        AVCaptureDevice *device = _videoInput.device;
+        AVCaptureDevice *device = self.videoInput.device;
         
 #pragma mark - 设置防抖模式时第一次配置摄像头会闪蓝光
-        /*
-         AVCaptureVideoStabilizationModeOff       = 0,
-         AVCaptureVideoStabilizationModeStandard	 = 1,
-         AVCaptureVideoStabilizationModeCinematic = 2,
-         AVCaptureVideoStabilizationModeAuto      = -1,
-         */
         // 支持视频稳定捕捉
         if ([device.activeFormat isVideoStabilizationModeSupported:AVCaptureVideoStabilizationModeAuto]) {
             NSString *version = [UIDevice currentDevice].systemVersion;
             if ([version integerValue] >= 8.0) {
-                videoConnection.preferredVideoStabilizationMode = AVCaptureVideoStabilizationModeAuto;
-                
+                videoConnection.preferredVideoStabilizationMode = AVCaptureVideoStabilizationModeOff;
             } else {
-                
+            
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-                
                 videoConnection.enablesVideoStabilizationWhenAvailable = YES;
-                
 #pragma clang diagnostic pop
             }
-
         }
-        
-        
         // 支持平滑对焦
         if (device.isSmoothAutoFocusSupported) {
             NSError *error;
@@ -646,27 +634,28 @@ static NSString *kCXCameraRampingVideoZoomContext;
                 device.smoothAutoFocusEnabled = YES;
                 [device unlockForConfiguration];
             } else {
-                if ([_delegate respondsToSelector:@selector(cameraManagerConfigurateFailed:)]) {
-                    [_delegate cameraManagerConfigurateFailed:error];
+                if ([self.delegate respondsToSelector:@selector(cameraManagerConfigurateFailed:)]) {
+                    [self.delegate cameraManagerConfigurateFailed:error];
                 }
             }
         }
         
-        
-        _movieOutputURL = [self uniqueMovieOutputURL];
-        
-        [_movieOutput startRecordingToOutputFileURL:_movieOutputURL
+        self.movieOutputURL = [self uniqueMovieOutputURL];
+        self.movieOutput.maxRecordedDuration = CMTimeMake(self.maxRecordedDuration, 1);
+        [self.movieOutput startRecordingToOutputFileURL:_movieOutputURL
                                   recordingDelegate:self];
 
     }
+
 }
+
 
 - (NSURL *)uniqueMovieOutputURL
 {
     NSFileManager *fileManger = [NSFileManager defaultManager];
     // 获取唯一临时路径@“XXXXXX”为固定格式
     NSString *mkdTemplate = [@"cxcamera.XXXXXX" appendTempPath];
-    // 获取c字符
+    // 获取字符
     const char *templateCString = [mkdTemplate fileSystemRepresentation];
     char *buffer = malloc(strlen(templateCString) + 1);
     strcpy(buffer, templateCString);
@@ -684,8 +673,6 @@ static NSString *kCXCameraRampingVideoZoomContext;
     }
     return nil;
 }
-
-
 
 /**
  *  结束录制视频
@@ -709,40 +696,42 @@ static NSString *kCXCameraRampingVideoZoomContext;
 
 #pragma mark - AVCaptureFileOutputRecordingDelegate
 
+- (void)captureOutput:(AVCaptureFileOutput *)captureOutput didStartRecordingToOutputFileAtURL:(NSURL *)fileURL fromConnections:(NSArray *)connections
+{
+    if ([self.delegate respondsToSelector:@selector(cameraManagerDidStartReocrdingVideo:)]) {
+        [self.delegate cameraManagerDidStartReocrdingVideo:[_movieOutputURL copy]];
+    }
+}
+
+
 - (void)captureOutput:(AVCaptureFileOutput *)captureOutput didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL fromConnections:(NSArray *)connections error:(NSError *)error
 {
-    if (error) {
-        if ([_delegate respondsToSelector:@selector(cameraManagerToSavedPhotosAlbumFailed:error:)]) {
-            [_delegate cameraManagerToSavedPhotosAlbumFailed:outputFileURL error:error];
-        }
+    if (!error) {
+        [self callBackEndRecordedWithError:nil];
     } else {
-        if ([_delegate respondsToSelector:@selector(cameraManagerDidSuccessedReocrdedVideo:recordedDuration:)]) {
-            [_delegate cameraManagerDidSuccessedReocrdedVideo:[_movieOutputURL copy] recordedDuration:[self recordedDuration]];
-        }
-        if (self.automaticWriteToLibary) {
-            [self saveVideoToLibrary:[_movieOutputURL copy]];
+        BOOL success = [error.userInfo[AVErrorRecordingSuccessfullyFinishedKey] boolValue];
+        if (success) {
+            if ([self.delegate respondsToSelector:@selector(cameraManagerDidReachMaxReocrdedDuration:)]) {
+                [self.delegate cameraManagerDidReachMaxReocrdedDuration:[_movieOutputURL copy]];
+            }
+        } else {
+            [self callBackEndRecordedWithError:error];
         }
     }
     _movieOutputURL = nil;
 }
 
 
+- (void)callBackEndRecordedWithError:(NSError *)error
+{
+    if ([_delegate respondsToSelector:@selector(cameraManagerDidEndReocrdedVideo:error:)]) {
+        [_delegate cameraManagerDidEndReocrdedVideo:[_movieOutputURL copy] error:error];
+    }
+}
+
 
 - (AVCaptureVideoOrientation)currentVideoOrientation
 {
-    /*
-     UIDeviceOrientationPortrait,            // Device oriented vertically, home button on the bottom
-     UIDeviceOrientationPortraitUpsideDown,  // Device oriented vertically, home button on the top
-     UIDeviceOrientationLandscapeLeft,       // Device oriented horizontally, home button on the right
-     UIDeviceOrientationLandscapeRight,      // Device oriented horizontally, home button on the left
-     UIDeviceOrientationFaceUp,              // Device oriented flat, face up正面朝上
-     UIDeviceOrientationFaceDown
-     */
-    /*AVCaptureVideoOrientationPortrait           = 1,
-     AVCaptureVideoOrientationPortraitUpsideDown = 2,
-     AVCaptureVideoOrientationLandscapeRight     = 3, Indicates that video should be oriented horizontally, home button on the right
-     AVCaptureVideoOrientationLandscapeLeft      = 4, Indicates that video should be oriented horizontally, home button on the left.
-     */
     AVCaptureVideoOrientation orientation;
     switch ([UIDevice currentDevice].orientation) {
         case UIDeviceOrientationPortrait:
@@ -767,46 +756,29 @@ static NSString *kCXCameraRampingVideoZoomContext;
     return orientation;
 }
 
+
 #pragma mark - 捕捉
 
-- (void)saveImageToLibrary:(UIImage *)image
+- (void)writeImageToPhotosAlbum:(UIImage *)image completionBlock:(void (^)(NSURL *, NSError *))completionBlock
 {
-    if ([self authorizeAssetsLibrary]) {
-        ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-        [library writeImageToSavedPhotosAlbum:image.CGImage
-                                  orientation:(NSInteger)image.imageOrientation
-        completionBlock:^(NSURL *assetURL, NSError *error) {
-            if (!error) {
-                if ([_delegate respondsToSelector:@selector(cameraManagerToSavedPhotosAlbumSuccessed:)]) {
-                    [_delegate cameraManagerToSavedPhotosAlbumSuccessed:image];
-                }
-            } else {
-                if ([_delegate respondsToSelector:@selector(cameraManagerToSavedPhotosAlbumFailed:error:)]) {
-                    [_delegate cameraManagerToSavedPhotosAlbumFailed:image error:error];
-                }
-            }
-        }];
-    } 
+    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+    [library writeImageToSavedPhotosAlbum:image.CGImage
+                              orientation:(NSInteger)image.imageOrientation
+      completionBlock:^(NSURL *assetURL, NSError *error) {
+          !completionBlock ? : completionBlock(assetURL,error);
+      }];
 }
 
-- (void)saveVideoToLibrary:(NSURL *)movieURL
+- (void)writeVideoToPhotosAlbumAtPath:(NSURL *)movieURL completionBlock:(void (^)(NSURL *, NSError *))completionBlock
 {
-    if ([self authorizeAssetsLibrary]) {
-        ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-        // 检查视频是否可以写入
-        if ([library videoAtPathIsCompatibleWithSavedPhotosAlbum:movieURL]) {
-            [library writeVideoAtPathToSavedPhotosAlbum:movieURL completionBlock:^(NSURL *assetURL, NSError *error) {
-                if (!error) {
-                    if ([_delegate respondsToSelector:@selector(cameraManagerToSavedPhotosAlbumSuccessed:)]) {
-                        [_delegate cameraManagerToSavedPhotosAlbumSuccessed:movieURL];
-                    }
-                } else {
-                    if ([_delegate respondsToSelector:@selector(cameraManagerToSavedPhotosAlbumFailed:error:)]) {
-                        [_delegate cameraManagerToSavedPhotosAlbumFailed:movieURL error:error];
-                    }
-                }
-            }];
-        }
+    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+    // 检查视频是否可以写入
+    if ([library videoAtPathIsCompatibleWithSavedPhotosAlbum:movieURL]) {
+        [library writeVideoAtPathToSavedPhotosAlbum:movieURL completionBlock:^(NSURL *assetURL, NSError *error) {
+            !completionBlock ? : completionBlock(assetURL,error);
+        }];
+    } else {
+        !completionBlock ? : completionBlock(nil,[[NSError alloc] init]);
     }
 }
 
@@ -878,8 +850,6 @@ static NSString *kCXCameraRampingVideoZoomContext;
     }
     return nil;
 }
-
-
 
 - (void)dealloc
 {

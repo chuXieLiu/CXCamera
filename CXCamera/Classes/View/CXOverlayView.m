@@ -104,11 +104,17 @@ static const CGFloat kCXCameraZoomSliderHeight = 40.0f;
 {
     self.cameraStatusView.switchButton.userInteractionEnabled = YES;
     self.cameraStatusView.timeLabel.text = @"00:00:00";
+    self.cameraModeView.shutterButton.selected = NO;
 }
 
 - (void)setRecordingFormattedTime:(NSString *)formattedTime
 {
     self.cameraStatusView.timeLabel.text = formattedTime;
+}
+
+- (void)setShutterEnable:(BOOL)enable
+{
+    self.cameraModeView.shutterButton.enabled = enable;
 }
 
 - (void)setCameraMode:(CXCameraMode)cameraMode

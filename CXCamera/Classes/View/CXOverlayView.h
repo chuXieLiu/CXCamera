@@ -50,6 +50,8 @@ typedef enum : NSUInteger {
 - (void)endRedording;
 - (void)setRecordingFormattedTime:(NSString *)formattedTime;
 
+- (void)setShutterEnable:(BOOL)enable;
+
 - (void)setZoomSliderHiden:(BOOL)hiden;
 - (void)updateZoomValue:(CGFloat)zoomValue;
 - (CGFloat)currentZoomValue;

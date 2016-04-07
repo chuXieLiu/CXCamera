@@ -15,12 +15,11 @@
 #import "UIView+CXExtension.h"
 #import "NSTimer+CXExtension.h"
 
-
-
+// 隐藏缩放条时间
 static const CGFloat kCXCameraHidenZoomSliderTimeInterval = 3.0f;
 
+// 定时器获取录制时间间隔
 static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
-
 
 @interface CXCameraViewController ()
 <
@@ -28,7 +27,6 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
     CXPreviewViewDelegate,
     CXOverLayViewDelegate
 >
-
 
 @property (nonatomic,strong) CXCameraManager *cameraManager;
 
@@ -47,7 +45,6 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
 @end
 
 
-
 @implementation CXCameraViewController
 
 - (void)viewDidLoad {
@@ -57,15 +54,11 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
     [self setupSession];
 }
 
-- (void)viewWillAppear:(BOOL)animated
-{
-    [super viewWillAppear:animated];
-}
-
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-    
+    [self stopZoomSliderTimer];
+    [self stopRecordingTimer];
 }
 
 -(BOOL)prefersStatusBarHidden
@@ -89,8 +82,6 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
     return UIInterfaceOrientationPortrait;
 }
 
-
-
 #pragma mark - CXPreviewViewDelegate
 
 - (void)previewView:(CXPreviewView *)preivewView singleTapAtPoint:(CGPoint)point
@@ -105,7 +96,7 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
 
 - (void)previewViewWillBeginPinch:(CXPreviewView *)previewView
 {
-    [self endZoomSliderTimer];
+    [self stopZoomSliderTimer];
     [self.overlayView setZoomSliderHiden:NO];
 }
 
@@ -113,7 +104,6 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
 {
     [self startZoomSliderTimer];
 }
-
 
 - (void)previewView:(CXPreviewView *)preivewView pinchScaleChangeValue:(CGFloat)value
 {
@@ -132,18 +122,21 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
         if ([self.overlayView prepareToRecording]) {
             dispatch_async(dispatch_get_global_queue(0, 0), ^{
                 [self.cameraManager startRecording];
-                [self startRecordingTimer];
             });
         } else {
             [self.cameraManager stopRecording];
-            [self endRecordingTimer];
+            [overlayView setShutterEnable:NO];
         }
-        
     }
 }
 
 - (void)didSelectedCancel:(CXOverlayView *)overlayView
 {
+    if ([self.cameraManager isRecording]) {
+        [self.cameraManager stopRecording];
+    }
+    [self stopRecordingTimer];
+    [self stopZoomSliderTimer];
     [self.cameraManager stopSession];
     [self dismissViewControllerAnimated:YES completion:nil];
 }
@@ -198,7 +191,7 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
         }
         [self.cameraManager rampZoomToValue:zoom];
     }
-    [self endZoomSliderTimer];
+    [self stopZoomSliderTimer];
 }
 
 - (void)didTouchUpInsideToCameraZoomType:(CXCameraZoomType)zoomType
@@ -211,7 +204,7 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
 
 - (void)didTouchDownZoomSliderView:(CXOverlayView *)overlayView
 {
-    [self endZoomSliderTimer];
+    [self stopZoomSliderTimer];
 }
 - (void)didTouchUpInsideZoomSliderView:(CXOverlayView *)overlayView
 {
@@ -224,7 +217,6 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
         [self.cameraManager setZoomValue:zoomValue];
     }
 }
-
 
 #pragma mark - CXCameraManagerDelegate
 
@@ -249,94 +241,114 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
     [self.overlayView updateZoomValue:zoomValue];
 }
 
-
 #pragma mark - 捕捉图片
 
-- (void)cameraManagerDidSuccessedCapturedStillImage:(UIImage *)image
+- (void)cameraManagerDidEndCaptureStillImage:(UIImage *)image error:(NSError *)error
 {
-    __weak typeof(self) weakSelf = self;
-    CXPhotoEditView *photoEditView = [CXPhotoEditView showPhotoEditViewWithPhoto:image rephotographBlock:^{
-        
-        [weakSelf.photoEditView removeFromSuperview];
-        
-    } employPhotoBlock:^{
-        
-        if ([self.delegate respondsToSelector:@selector(cameraViewController:didCaptureImage:)]) {
-            [self.delegate cameraViewController:self didCaptureImage:image];
-        }
-        
-        [weakSelf dismissViewControllerAnimated:YES completion:nil];
-        
-        
-    }];
-    [self.view addSubview:photoEditView];
-    self.photoEditView = photoEditView;
-    self.photoEditView.frame = self.view.bounds;
-}
-
-- (void)cameraManagerDidFailedCapturedStillImage:(NSError *)error
-{
-    if ([self.delegate respondsToSelector:@selector(cameraViewController:didCaptureImage:)]) {
-        [self.delegate cameraViewController:self didCaptureImage:nil];
+    if (!error) {
+        __weak typeof(self) weakSelf = self;
+        CXPhotoEditView *photoEditView = [CXPhotoEditView showPhotoEditViewWithPhoto:image rephotographBlock:^{
+            [weakSelf.photoEditView removeFromSuperview];
+        } employPhotoBlock:^{
+            [weakSelf callBackCaptureStillImage:image error:nil];
+            [weakSelf dismissViewControllerAnimated:YES completion:nil];
+        }];
+        [self.view addSubview:photoEditView];
+        self.photoEditView = photoEditView;
+        self.photoEditView.frame = self.view.bounds;
+        [self writeToLibaryWithImage:image];
+    } else {
+        [self callBackCaptureStillImage:nil error:error];
     }
 }
+
+- (void)writeToLibaryWithImage:(UIImage *)image
+{
+    if (self.automaticWriteToLibary) {
+        if ([self checkAccessForPhotosAlbum]) {
+            [self.cameraManager writeImageToPhotosAlbum:image
+            completionBlock:^(NSURL *assetURL, NSError *error) {
+                if ([self.delegate respondsToSelector:@selector(cameraViewController:automaticWriteImageToPhotosAlbum:error:)]) {
+                    [self.delegate cameraViewController:self automaticWriteImageToPhotosAlbum:image error:error];
+                }
+            }];
+        }
+    }
+}
+
+- (void)callBackCaptureStillImage:(UIImage *)image error:(NSError *)error
+{
+    if ([self.delegate respondsToSelector:@selector(cameraViewController:didEndCaptureImage:error:)]) {
+        [self.delegate cameraViewController:self didEndCaptureImage:image error:error];
+    }
+}
+
 
 #pragma mark - 捕捉视频
 
-- (void)cameraManagerDidSuccessedReocrdedVideo:(NSURL *)fileURL recordedDuration:(NSTimeInterval)duration
+- (void)cameraManagerDidStartReocrdingVideo:(NSURL *)fileURL
 {
-    [self.overlayView setRecordingFormattedTime:@"00:00:00"];
-    __weak typeof(self) weakSelf = self;
-    CXVideoEditView *videoEditView = [CXVideoEditView showVideoEditViewWithVideoURL:fileURL recordAgainBlock:^{
-        [weakSelf.videoEditView removeFromSuperview];
-    } employVideoBlock:^{
-        
-        if ([self.delegate respondsToSelector:@selector(cameraViewController:didCaptureVideo:)]) {
-            [self.delegate cameraViewController:self didCaptureVideo:fileURL];
-        }
-        
-        [weakSelf dismissViewControllerAnimated:YES completion:nil];
-        
-    }];
-    [self.view addSubview:videoEditView];
-    self.videoEditView = videoEditView;
-    self.videoEditView.frame = self.view.bounds;
+    [self startRecordingTimer];
 }
 
-- (void)cameraManagerDidFailedReocrdedVideo:(NSError *)error
+- (void)cameraManagerDidReachMaxReocrdedDuration:(NSURL *)fileURL
 {
-    [self.overlayView setRecordingFormattedTime:@"00:00:00"];
-    
-    if ([self.delegate respondsToSelector:@selector(cameraViewController:didCaptureVideo:)]) {
-        [self.delegate cameraViewController:self didCaptureVideo:nil];
+    [self cameraManagerDidEndReocrdedVideo:fileURL error:nil];
+}
+
+- (void)cameraManagerDidEndReocrdedVideo:(NSURL *)fileURL error:(NSError *)error
+{
+    [self stopRecordingTimer];
+    [self.overlayView endRedording];
+    if (!error) {
+        __weak typeof(self) weakSelf = self;
+        CXVideoEditView *videoEditView = [CXVideoEditView showVideoEditViewWithVideoURL:fileURL recordAgainBlock:^{
+            [weakSelf.overlayView setShutterEnable:YES];
+            [weakSelf.videoEditView removeFromSuperview];
+        } employVideoBlock:^{
+            [weakSelf.overlayView setShutterEnable:YES];
+            [weakSelf callBackEndRecordedVideo:fileURL error:error];
+            [weakSelf dismissViewControllerAnimated:YES completion:nil];
+        }];
+        [self.view addSubview:videoEditView];
+        self.videoEditView = videoEditView;
+        self.videoEditView.frame = self.view.bounds;
+        [self writeToLibaryWithVideoURL:fileURL];
+    } else {
+        [self callBackEndRecordedVideo:fileURL error:error];
     }
 }
 
-#pragma mark - 保存资源
-
-- (void)cameraManagerToSavedPhotosAlbumSuccessed:(id)media
+- (void)writeToLibaryWithVideoURL:(NSURL *)videoURL
 {
-    if ([media isKindOfClass:[UIImage class]]) {
-        if ([self.delegate respondsToSelector:@selector(cameraViewController:saveImage:isSuccessed:)]) {
-            [self.delegate cameraViewController:self saveImage:media isSuccessed:YES];
-        }
-    } else {
-        if ([self.delegate respondsToSelector:@selector(cameraViewController:saveVideo:isSuccessed:)]) {
-            [self.delegate cameraViewController:self saveVideo:media isSuccessed:YES];
+    if (self.automaticWriteToLibary) {
+        if ([self checkAccessForPhotosAlbum]) {
+            [self.cameraManager writeVideoToPhotosAlbumAtPath:videoURL
+              completionBlock:^(NSURL *assetURL, NSError *error) {
+                  if ([self.delegate respondsToSelector:@selector(cameraViewController:automaticWriteVideoToPhotosAlbumAtPath:error:)]) {
+                      [self.delegate cameraViewController:self automaticWriteVideoToPhotosAlbumAtPath:videoURL error:error];
+                  }
+              }];
         }
     }
-    
 }
-- (void)cameraManagerToSavedPhotosAlbumFailed:(id)media error:(NSError *)error
+
+- (BOOL)checkAccessForPhotosAlbum
 {
-    if ([media isKindOfClass:[UIImage class]]) {
-        if ([self.delegate respondsToSelector:@selector(cameraViewController:saveImage:isSuccessed:)]) {
-            [self.delegate cameraViewController:self saveImage:media isSuccessed:NO];
-        }
+    if ([self.cameraManager authorizeAssetsLibrary]) {
+        return YES;
     } else {
-        if ([self.delegate respondsToSelector:@selector(cameraViewController:saveVideo:isSuccessed:)]) {
-            [self.delegate cameraViewController:self saveVideo:media isSuccessed:NO];
+        if ([self.delegate respondsToSelector:@selector(cameraNoAccessForPhotosAlbum)]) {
+            [self.delegate cameraNoAccessForPhotosAlbum];
         }
+        return NO;
+    }
+}
+
+- (void)callBackEndRecordedVideo:(NSURL *)videoURL error:(NSError *)error
+{
+    if ([self.delegate respondsToSelector:@selector(cameraViewController:didEndCaptureImage:error:)]) {
+        [self.delegate cameraViewController:self didEndCaptureVideo:videoURL error:error];
     }
 }
 
@@ -359,6 +371,7 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
     [self.view addSubview:overlayView];
     self.overlayView = overlayView;
 }
+
 - (void)setupSession
 {
     AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
@@ -380,8 +393,8 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
 - (void)configurateSession
 {
     self.cameraManager = [[CXCameraManager alloc] init];
-    self.cameraManager.automaticWriteToLibary = self.automaticWriteToLibary;
     self.cameraManager.delegate = self;
+    self.cameraManager.maxRecordedDuration = self.maxRecordedDuration;
     
     [self.previewView setSession:self.cameraManager.session];
     [self.cameraManager startSession];
@@ -389,7 +402,7 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
 
 - (void)startZoomSliderTimer
 {
-    [self endZoomSliderTimer];
+    [self stopZoomSliderTimer];
     __weak typeof(self) weakSelf = self;
     self.zoomSliderTimer = [NSTimer cx_scheduledTimerWithTimeInterval:kCXCameraHidenZoomSliderTimeInterval
                                                             fireBlock:^{
@@ -398,7 +411,7 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
     [[NSRunLoop mainRunLoop] addTimer:self.zoomSliderTimer forMode:NSRunLoopCommonModes];
 }
 
-- (void)endZoomSliderTimer
+- (void)stopZoomSliderTimer
 {
     [self.zoomSliderTimer invalidate];
     self.zoomSliderTimer = nil;
@@ -406,20 +419,19 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
 
 - (void)startRecordingTimer
 {
-    [self endRecordingTimer];
+    [self stopRecordingTimer];
     __weak typeof(self) weakSelf = self;
     self.recordingTimer = [NSTimer cx_timerWithTimeInterval:kCXCameraRecordingTimeInterval
                                                     repeats:YES
-                                                  fireBlock:^{
-                                                      NSString *formattedTime = [weakSelf formatRecordedTime:[weakSelf.cameraManager recordedDuration]];
-                                                      [weakSelf.overlayView setRecordingFormattedTime:formattedTime];
-                                                  }];
+    fireBlock:^{
+          NSString *formattedTime = [weakSelf formatRecordedTime:[weakSelf.cameraManager recordedDuration]];
+          [weakSelf.overlayView setRecordingFormattedTime:formattedTime];
+      }];
     [[NSRunLoop mainRunLoop] addTimer:self.recordingTimer forMode:NSRunLoopCommonModes];
     
 }
 
-
-- (void)endRecordingTimer
+- (void)stopRecordingTimer
 {
     [self.recordingTimer invalidate];
     self.recordingTimer = nil;
@@ -434,22 +446,45 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
 }
 
 
-- (void)dealloc
-{
-    [self endZoomSliderTimer];
-    [self endRecordingTimer];
-}
+#pragma mark - public method
 
-+ (instancetype)showCameraWithDelegate:(id<CXCameraViewControllerDelegate>)delegate cameraMode:(CXCameraMode)cameraMode automaticWriteToLibary:(BOOL)automaticWriteToLibary
+/**
+ *  present一个拍照相机控制器
+ */
++ (instancetype)presentPhotoCameraWithDelegate:(id<CXCameraViewControllerDelegate>)delegate
+                        automaticWriteToLibary:(BOOL)automaticWriteToLibary
 {
     CXCameraViewController *cameraVC = [[CXCameraViewController alloc] init];
-    cameraVC.cameraMode = cameraMode;
+    cameraVC.cameraMode = CXCameraModePhoto;
     cameraVC.automaticWriteToLibary = automaticWriteToLibary;
     cameraVC.delegate = delegate;
-    UIViewController *rootVC = [UIApplication sharedApplication].keyWindow.rootViewController;
-    [rootVC presentViewController:cameraVC animated:YES completion:nil];
+    [self presentCameraVC:cameraVC];
     return cameraVC;
 }
+
+/**
+ *  present一个录像相机控制器
+ */
++ (instancetype)presentVideoCameraWithDelegate:(id<CXCameraViewControllerDelegate>)delegate
+                           maxRecordedDuration:(NSTimeInterval)maxRecordedDuration
+                        automaticWriteToLibary:(BOOL)automaticWriteToLibary
+{
+    CXCameraViewController *cameraVC = [[CXCameraViewController alloc] init];
+    cameraVC.cameraMode = CXCameraModeVideo;
+    cameraVC.maxRecordedDuration = maxRecordedDuration;
+    cameraVC.automaticWriteToLibary = automaticWriteToLibary;
+    cameraVC.delegate = delegate;
+    [self presentCameraVC:cameraVC];
+    return cameraVC;
+}
+
++ (void)presentCameraVC:(CXCameraViewController *)cameraVC
+{
+    UIViewController *rootVC = [UIApplication sharedApplication].keyWindow.rootViewController;
+    [rootVC presentViewController:cameraVC animated:YES completion:nil];
+}
+
+
 
 
 @end

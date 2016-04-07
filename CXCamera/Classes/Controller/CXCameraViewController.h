@@ -15,53 +15,84 @@
 
 @optional
 
-/// 没有权限访问
+/**
+ *  没有权限访问摄像头
+ */
 - (void)cameraNoAccessForMedia;
 
-/// 相机配置错误
+/**
+ *  没有权限访问相册
+ */
+- (void)cameraNoAccessForPhotosAlbum;
+
+/**
+ *  相机配置错误
+ */
 - (void)cameraDidConfigurateError:(NSError *)error;
 
-/// 捕捉图片，image可能为空
-- (void)cameraViewController:(CXCameraViewController *)cameraVC didCaptureImage:(UIImage *)image;
+/**
+ *  结束图片捕捉，当捕捉出错是image为空
+ */
+- (void)cameraViewController:(CXCameraViewController *)cameraVC
+          didEndCaptureImage:(UIImage *)image
+                       error:(NSError *)error;
 
-/// 捕捉视频，video可能为空
-- (void)cameraViewController:(CXCameraViewController *)cameraVC didCaptureVideo:(NSURL *)videoURL;
+/**
+ *  捕捉视频，当捕捉出错时video为空
+ */
+- (void)cameraViewController:(CXCameraViewController *)cameraVC
+          didEndCaptureVideo:(NSURL *)videoURL
+                       error:(NSError *)error;
 
-/// 自动保存图片结果
-- (void)cameraViewController:(CXCameraViewController *)cameraVC saveImage:(UIImage *)image isSuccessed:(BOOL)isSuccessed;
+/**
+ *  自动保存图片回调
+ */
+- (void)cameraViewController:(CXCameraViewController *)cameraVC automaticWriteImageToPhotosAlbum:(UIImage *)image
+                       error:(NSError *)error;
 
-/// 自动保存视频结果
-- (void)cameraViewController:(CXCameraViewController *)cameraVC saveVideo:(NSURL *)videoURL isSuccessed:(BOOL)isSuccessed;
+/**
+ *  自动保存视频回调
+ */
+- (void)cameraViewController:(CXCameraViewController *)cameraVC automaticWriteVideoToPhotosAlbumAtPath:(NSURL *)videoURL
+                       error:(NSError *)error;
 
 @end
 
 
 @interface CXCameraViewController : UIViewController
 
-/// 相机类型 CXCameraModePhoto  / CXCameraModeVideo
+/**
+ *  相机类型 CXCameraModePhoto;CXCameraModeVideo
+ */
 @property (nonatomic,assign) CXCameraMode cameraMode;
 
-/// 是否自动写入相册 , 默认为NO
+/**
+ *  是否自动写入相册 , 默认为NO
+ */
 @property (nonatomic,assign) BOOL automaticWriteToLibary;
 
-/// 相机代理
+/**
+ * 相机代理
+ */
 @property (nonatomic,weak) id<CXCameraViewControllerDelegate> delegate;
 
+/**
+ * 最长录制视频时间
+ */
+@property (nonatomic,assign) NSTimeInterval maxRecordedDuration;
 
+/**
+ *  present一个拍照相机控制器
+ */
++ (instancetype)presentPhotoCameraWithDelegate:(id<CXCameraViewControllerDelegate>)delegate
+                        automaticWriteToLibary:(BOOL)automaticWriteToLibary;
 
-/// present一个相机控制器
-+ (instancetype)showCameraWithDelegate:(id<CXCameraViewControllerDelegate>)delegate
-                            cameraMode:(CXCameraMode)cameraMode
-                automaticWriteToLibary:(BOOL)automaticWriteToLibary;
-
-
-
-
-
-
-
-
-
+/**
+ *  present一个录像相机控制器
+ */
++ (instancetype)presentVideoCameraWithDelegate:(id<CXCameraViewControllerDelegate>)delegate
+                           maxRecordedDuration:(NSTimeInterval)maxRecordedDuration
+                        automaticWriteToLibary:(BOOL)automaticWriteToLibary;
 
 
 
