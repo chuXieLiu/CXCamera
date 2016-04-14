@@ -54,6 +54,11 @@
  */
 - (void)cameraRampZoomToValue:(CGFloat)zoomValue;
 
+/**
+ * 相机捕捉范围发送变化
+ */
+- (void)captureDeviceSubjectAreaDidChange;
+
 @end
 
 
@@ -65,6 +70,8 @@
 
 @property (nonatomic,assign) CXCameraMode cameraMode;
 
+@property (nonatomic,assign) BOOL autoFocusAndExpose;
+
 @property (nonatomic,assign) NSTimeInterval maxRecordedDuration;
 
 @property (nonatomic,weak) id<CXCameraManagerDelegate> delegate;
@@ -72,8 +79,8 @@
 /**
  *  开启会话
  */
-
 - (void)startSession;
+
 /**
  *  结束会话
  */
@@ -82,8 +89,8 @@
 /**
  *  是否支持切换摄像头
  */
-
 - (BOOL)canSwitchCamera;
+
 /**
  *  切换摄像头
  */
@@ -138,7 +145,6 @@
  *  设置手电筒模式
  */
 - (void)setTorchMode:(AVCaptureTorchMode)torchMode;
-
 
 /**
  *  是否支持缩放

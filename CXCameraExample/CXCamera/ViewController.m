@@ -43,7 +43,9 @@
 //    cameraVC.cameraMode = CXCameraModePhoto;
 //    cameraVC.automaticWriteToLibary = YES;
 //    [self presentViewController:cameraVC animated:YES completion:nil];
-    [CXCameraViewController presentPhotoCameraWithDelegate:self automaticWriteToLibary:YES];
+    [CXCameraViewController presentPhotoCameraWithDelegate:self
+                                    automaticWriteToLibary:YES
+                                        autoFocusAndExpose:YES];
     
 }
 
@@ -55,7 +57,10 @@
 //    cameraVC.maxRecordedDuration = 5;
 //    [self presentViewController:cameraVC animated:YES completion:nil];
     
-    [CXCameraViewController presentVideoCameraWithDelegate:self maxRecordedDuration:10 automaticWriteToLibary:YES];
+    [CXCameraViewController presentVideoCameraWithDelegate:self
+                                       maxRecordedDuration:10
+                                    automaticWriteToLibary:YES
+                                        autoFocusAndExpose:YES];
 
 }
 

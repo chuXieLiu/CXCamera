@@ -8,14 +8,16 @@
 
 #import "CXPreviewView.h"
 #import "CALayer+CXExtension.h"
+#import "CXCommonConst.h"
+#import "UIView+CXExtension.h"
 
-static const CGFloat kCXFoucsBoxWidth = 150.0f;
-static const CGFloat kCXFoucsBoxHeight = 150.0f;
+static const CGFloat kCXFoucsBoxWidth = 250.0f;
+static const CGFloat kCXFoucsBoxHeight = 250.0f;
 
 static const CGFloat kCXExposeBoxWidth = 150.0f;
 static const CGFloat kCXExposeBoxHeight = 150.0f;
 
-static const NSTimeInterval kCXBoxAnimationInterval = 0.2;
+static const NSTimeInterval kCXBoxAnimationInterval = 0.2f;
 
 static const CGFloat kCXBoxBorderWidth = 2.0f;
 
@@ -64,7 +66,6 @@ static const CGFloat kCXBoxBorderWidth = 2.0f;
     self.pinchGesture.enabled = self.enableZoom;
 }
 
-
 - (void)setEnableExpose:(BOOL)enableExpose
 {
     _enableExpose = enableExpose;
@@ -76,27 +77,20 @@ static const CGFloat kCXBoxBorderWidth = 2.0f;
     [(AVCaptureVideoPreviewLayer *)self.layer setSession:session];
 }
 
+- (BOOL)autoFocusAndExposure
+{
+    return [self showfoucsBox];
+}
+
 #pragma mark - target event
-
-/*
- - (void)handleSingleTap:(UITapGestureRecognizer *)gesture
- {
-    if (!self.enableFoucs) return;
-    CGPoint point = [gesture locationInView:self];
-    [self showBox:self.focusBox atPoint:point];
-    if ([self.delegate respondsToSelector:@selector(previewView:singleTapAtPoint:)]) {
-        [self.delegate previewView:self singleTapAtPoint:[self captureDevicePoint:point]];
-    }
- }*/
-
 
 - (void)handleSingleTap:(UITapGestureRecognizer *)gesture
 {
     if (!self.enableExpose) return;
     CGPoint point = [gesture locationInView:self];
-    [self showBox:self.exposeBox atPoint:point];
-    if ([self.delegate respondsToSelector:@selector(previewView:doubleTapAtPoint:)]) {
-        [self.delegate previewView:self doubleTapAtPoint:[self captureDevicePoint:point]];
+    [self showExposeBoxAtPoint:point];
+    if ([self.delegate respondsToSelector:@selector(previewView:singleTapAtPoint:)]) {
+        [self.delegate previewView:self singleTapAtPoint:[self captureDevicePoint:point]];
     }
 }
 
@@ -110,8 +104,8 @@ static const CGFloat kCXBoxBorderWidth = 2.0f;
         value = gesture.scale - self.lastScale;
     }
     self.lastScale = gesture.scale;
-    if ([self.delegate respondsToSelector:@selector(previewView:pinchScaleChangeValue:)]) {
-        [self.delegate previewView:self pinchScaleChangeValue:value];
+    if ([self.delegate respondsToSelector:@selector(previewView:pinchScaleValueDidChange:)]) {
+        [self.delegate previewView:self pinchScaleValueDidChange:value];
     }
     UIGestureRecognizerState state = gesture.state;
     if (state == UIGestureRecognizerStateBegan) {
@@ -128,22 +122,52 @@ static const CGFloat kCXBoxBorderWidth = 2.0f;
     }
 }
 
-- (void)showBox:(UIView *)box atPoint:(CGPoint)point
+- (void)showExposeBoxAtPoint:(CGPoint)point
 {
+    self.focusBox.hidden = YES;
+    UIView *box = self.exposeBox;
     box.hidden = NO;
     box.center = point;
     [UIView animateWithDuration:kCXBoxAnimationInterval
                           delay:0.f
                         options:UIViewAnimationOptionCurveLinear
-                     animations:^{
-                         box.layer.transformScale = 0.5f;
-                     } completion:^(BOOL finished) {
-                         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                             box.hidden = YES;
-                             box.layer.transformScale = 1.0f;
-                         });
-                     }];
+     animations:^{
+         box.layer.transformScale = 0.5f;
+     } completion:^(BOOL finished) {
+         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+             box.hidden = YES;
+             box.layer.transformScale = 1.0f;
+         });
+     }];
 }
+
+- (BOOL)showfoucsBox
+{
+    if (!self.exposeBox.isHidden) return NO;
+    if (!self.focusBox.isHidden) return NO;
+    UIView *box = self.focusBox;
+    box.hidden = NO;
+
+    CGFloat centerX = self.width * 0.5;
+    CGFloat centerY = (self.height - kCXOverlayModeViewHeight) * 0.5;
+    CGPoint center = CGPointMake(centerX,centerY);
+    box.center = center;
+
+    [UIView animateWithDuration:kCXBoxAnimationInterval
+                          delay:0.f
+                        options:UIViewAnimationOptionCurveLinear
+     animations:^{
+         box.layer.transformScale = 0.6f;
+     } completion:^(BOOL finished) {
+         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+             box.hidden = YES;
+             box.layer.transformScale = 1.0f;
+         });
+     }];
+    return YES;
+}
+
+
 
 #pragma mark - private method
 
@@ -197,7 +221,7 @@ static const CGFloat kCXBoxBorderWidth = 2.0f;
         UIView *focusBox = [[UIView alloc] initWithFrame:CGRectMake(0, 0, kCXFoucsBoxWidth, kCXFoucsBoxHeight)];
         focusBox.backgroundColor = [UIColor clearColor];
         focusBox.layer.borderWidth = kCXBoxBorderWidth;
-        focusBox.layer.borderColor = [UIColor yellowColor].CGColor;
+        focusBox.layer.borderColor = [UIColor orangeColor].CGColor;
         focusBox.hidden = YES;
         [self addSubview:focusBox];
         _focusBox = focusBox;

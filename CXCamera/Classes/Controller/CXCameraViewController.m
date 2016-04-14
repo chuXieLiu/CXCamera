@@ -42,6 +42,8 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
 
 @property (nonatomic,weak) CXVideoEditView *videoEditView;
 
+@property (nonatomic,assign) BOOL lastAutoFocusAndExpose;
+
 @end
 
 
@@ -59,6 +61,15 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
     [super viewWillDisappear:animated];
     [self stopZoomSliderTimer];
     [self stopRecordingTimer];
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    if (self.autoFocusAndExpose) {
+        [self.cameraManager resetFocusAndExposure];
+        [self.previewView autoFocusAndExposure];
+    }
 }
 
 -(BOOL)prefersStatusBarHidden
@@ -86,11 +97,6 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
 
 - (void)previewView:(CXPreviewView *)preivewView singleTapAtPoint:(CGPoint)point
 {
-    [self.cameraManager focusAtPoint:point];
-}
-
-- (void)previewView:(CXPreviewView *)preivewView doubleTapAtPoint:(CGPoint)point
-{
     [self.cameraManager exposeAtPoint:point];
 }
 
@@ -105,7 +111,7 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
     [self startZoomSliderTimer];
 }
 
-- (void)previewView:(CXPreviewView *)preivewView pinchScaleChangeValue:(CGFloat)value
+- (void)previewView:(CXPreviewView *)preivewView pinchScaleValueDidChange:(CGFloat)value
 {
     CGFloat zoomValue = MIN([self.overlayView currentZoomValue] + value, 1.0);
     zoomValue = MAX(zoomValue, 0);
@@ -123,9 +129,17 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
             dispatch_async(dispatch_get_global_queue(0, 0), ^{
                 [self.cameraManager startRecording];
             });
+            // 录像时关闭自动对焦
+            self.lastAutoFocusAndExpose = self.autoFocusAndExpose;
+            if (self.autoFocusAndExpose) {
+                self.cameraManager.autoFocusAndExpose = NO;
+            }
         } else {
             [self.cameraManager stopRecording];
             [overlayView setShutterEnable:NO];
+            if (self.lastAutoFocusAndExpose) {
+                self.cameraManager.autoFocusAndExpose = self.lastAutoFocusAndExpose;
+            }
         }
     }
 }
@@ -234,12 +248,19 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
     }
 }
 
-#pragma mark - 缩放
-
 - (void)cameraRampZoomToValue:(CGFloat)zoomValue
 {
     [self.overlayView updateZoomValue:zoomValue];
 }
+
+- (void)captureDeviceSubjectAreaDidChange
+{
+    if (self.autoFocusAndExpose) {
+        [self.previewView autoFocusAndExposure];
+        [self.cameraManager resetFocusAndExposure];
+    }
+}
+
 
 #pragma mark - 捕捉图片
 
@@ -247,7 +268,7 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
 {
     if (!error) {
         __weak typeof(self) weakSelf = self;
-        CXPhotoEditView *photoEditView = [CXPhotoEditView showPhotoEditViewWithPhoto:image rephotographBlock:^{
+        CXPhotoEditView *photoEditView = [CXPhotoEditView photoEditViewWithPhoto:image rephotographBlock:^{
             [weakSelf.photoEditView removeFromSuperview];
         } employPhotoBlock:^{
             [weakSelf callBackCaptureStillImage:image error:nil];
@@ -302,7 +323,7 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
     [self.overlayView endRedording];
     if (!error) {
         __weak typeof(self) weakSelf = self;
-        CXVideoEditView *videoEditView = [CXVideoEditView showVideoEditViewWithVideoURL:fileURL recordAgainBlock:^{
+        CXVideoEditView *videoEditView = [CXVideoEditView videoEditViewWithVideoURL:fileURL recordAgainBlock:^{
             [weakSelf.overlayView setShutterEnable:YES];
             [weakSelf.videoEditView removeFromSuperview];
         } employVideoBlock:^{
@@ -395,6 +416,7 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
     self.cameraManager = [[CXCameraManager alloc] init];
     self.cameraManager.delegate = self;
     self.cameraManager.maxRecordedDuration = self.maxRecordedDuration;
+    self.cameraManager.autoFocusAndExpose = self.autoFocusAndExpose;
     
     [self.previewView setSession:self.cameraManager.session];
     [self.cameraManager startSession];
@@ -405,9 +427,9 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
     [self stopZoomSliderTimer];
     __weak typeof(self) weakSelf = self;
     self.zoomSliderTimer = [NSTimer cx_scheduledTimerWithTimeInterval:kCXCameraHidenZoomSliderTimeInterval
-                                                            fireBlock:^{
-                                                                [weakSelf.overlayView setZoomSliderHiden:YES];
-                                                            }];
+    fireBlock:^{
+        [weakSelf.overlayView setZoomSliderHiden:YES];
+    }];
     [[NSRunLoop mainRunLoop] addTimer:self.zoomSliderTimer forMode:NSRunLoopCommonModes];
 }
 
@@ -453,11 +475,13 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
  */
 + (instancetype)presentPhotoCameraWithDelegate:(id<CXCameraViewControllerDelegate>)delegate
                         automaticWriteToLibary:(BOOL)automaticWriteToLibary
+                            autoFocusAndExpose:(BOOL)autoFocusAndExpose
 {
     CXCameraViewController *cameraVC = [[CXCameraViewController alloc] init];
     cameraVC.cameraMode = CXCameraModePhoto;
     cameraVC.automaticWriteToLibary = automaticWriteToLibary;
     cameraVC.delegate = delegate;
+    cameraVC.autoFocusAndExpose = autoFocusAndExpose;
     [self presentCameraVC:cameraVC];
     return cameraVC;
 }
@@ -468,12 +492,14 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
 + (instancetype)presentVideoCameraWithDelegate:(id<CXCameraViewControllerDelegate>)delegate
                            maxRecordedDuration:(NSTimeInterval)maxRecordedDuration
                         automaticWriteToLibary:(BOOL)automaticWriteToLibary
+                            autoFocusAndExpose:(BOOL)autoFocusAndExpose
 {
     CXCameraViewController *cameraVC = [[CXCameraViewController alloc] init];
     cameraVC.cameraMode = CXCameraModeVideo;
     cameraVC.maxRecordedDuration = maxRecordedDuration;
     cameraVC.automaticWriteToLibary = automaticWriteToLibary;
     cameraVC.delegate = delegate;
+    cameraVC.autoFocusAndExpose = autoFocusAndExpose;
     [self presentCameraVC:cameraVC];
     return cameraVC;
 }

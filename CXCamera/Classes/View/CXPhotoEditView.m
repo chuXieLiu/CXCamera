@@ -27,9 +27,9 @@ static const CGFloat kCXPhotoEditViewToolViewHeight = 70.0f;
 
 @implementation CXPhotoEditView
 
-+ (instancetype)showPhotoEditViewWithPhoto:(UIImage *)photo
-                         rephotographBlock:(CXCameraRephotographBlock)rephotographBlock
-                          employPhotoBlock:(CXCameraEmployPhotoBlock)employPhotoBlock
++ (instancetype)photoEditViewWithPhoto:(UIImage *)photo
+                     rephotographBlock:(CXCameraRephotographBlock)rephotographBlock
+                      employPhotoBlock:(CXCameraEmployPhotoBlock)employPhotoBlock;
 {
     CXPhotoEditView *photoView = [[CXPhotoEditView alloc] initWithFrame:CGRectZero];
     photoView.photo = photo;

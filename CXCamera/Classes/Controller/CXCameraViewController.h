@@ -31,7 +31,7 @@
 - (void)cameraDidConfigurateError:(NSError *)error;
 
 /**
- *  结束图片捕捉，当捕捉出错是image为空
+ *  结束图片捕捉，当捕捉出错时image为空
  */
 - (void)cameraViewController:(CXCameraViewController *)cameraVC
           didEndCaptureImage:(UIImage *)image
@@ -82,17 +82,24 @@
 @property (nonatomic,assign) NSTimeInterval maxRecordedDuration;
 
 /**
+ * 当设备检测到亮度变化（lighting lighting）或大范围活动（substantial movement）时， 会重新以中心点开始自动连续对焦与曝光
+ */
+@property (nonatomic,assign) BOOL autoFocusAndExpose;
+
+/**
  *  present一个拍照相机控制器
  */
 + (instancetype)presentPhotoCameraWithDelegate:(id<CXCameraViewControllerDelegate>)delegate
-                        automaticWriteToLibary:(BOOL)automaticWriteToLibary;
+                        automaticWriteToLibary:(BOOL)automaticWriteToLibary
+                            autoFocusAndExpose:(BOOL)autoFocusAndExpose;
 
 /**
  *  present一个录像相机控制器
  */
 + (instancetype)presentVideoCameraWithDelegate:(id<CXCameraViewControllerDelegate>)delegate
                            maxRecordedDuration:(NSTimeInterval)maxRecordedDuration
-                        automaticWriteToLibary:(BOOL)automaticWriteToLibary;
+                        automaticWriteToLibary:(BOOL)automaticWriteToLibary
+                            autoFocusAndExpose:(BOOL)autoFocusAndExpose;
 
 
 

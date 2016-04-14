@@ -38,9 +38,9 @@ static NSString *kAVPlayerItemPropertyStatus = @"status";
 
 @implementation CXVideoEditView
 
-+ (instancetype)showVideoEditViewWithVideoURL:(NSURL *)videoURL
-                             recordAgainBlock:(CXCameraRecordAgainBlock)recordAgainBlock
-                             employVideoBlock:(CXCameraEmployVideoBlock)employVideoBlock
++ (instancetype)videoEditViewWithVideoURL:(NSURL *)videoURL
+                         recordAgainBlock:(CXCameraRecordAgainBlock)recordAgainBlock
+                         employVideoBlock:(CXCameraEmployVideoBlock)employVideoBlock;
 {
     CXVideoEditView *videoView = [[CXVideoEditView alloc] initWithFrame:CGRectZero];
     videoView.videoURL = videoURL;

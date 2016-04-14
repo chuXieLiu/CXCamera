@@ -13,8 +13,8 @@ typedef void(^CXCameraEmployVideoBlock)();  // 使用视频
 
 @interface CXVideoEditView : UIView
 
-+ (instancetype)showVideoEditViewWithVideoURL:(NSURL *)videoURL
-                             recordAgainBlock:(CXCameraRecordAgainBlock)recordAgainBlock
-                             employVideoBlock:(CXCameraEmployVideoBlock)employVideoBlock;
++ (instancetype)videoEditViewWithVideoURL:(NSURL *)videoURL
+                         recordAgainBlock:(CXCameraRecordAgainBlock)recordAgainBlock
+                         employVideoBlock:(CXCameraEmployVideoBlock)employVideoBlock;
 
 @end

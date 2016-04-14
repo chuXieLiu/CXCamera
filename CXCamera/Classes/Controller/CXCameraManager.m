@@ -35,7 +35,6 @@ static NSString *kCXCameraRampingVideoZoomContext;
 >
 
 @property (nonatomic,assign) CXDeviceMode deviceMode;
-
 /** 会话 */
 @property (nonatomic,strong) AVCaptureSession *session;
 /** 视频捕捉 */
@@ -83,11 +82,14 @@ static NSString *kCXCameraRampingVideoZoomContext;
 {
     // 创建会话，会话是捕捉场景活动的中心枢纽
     _session = [[AVCaptureSession alloc] init];
+    
     // 为会话配置预设值
     _session.sessionPreset = AVCaptureSessionPresetHigh;
+//    _session.sessionPreset = AVCaptureSessionPreset640x480;
     
     // 创建视频捕捉对象
     AVCaptureDevice *videoDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    
     _videoInput = [AVCaptureDeviceInput deviceInputWithDevice:videoDevice error:error];
     if (_videoInput) {
         if ([_session canAddInput:_videoInput]) {
@@ -95,7 +97,6 @@ static NSString *kCXCameraRampingVideoZoomContext;
             [_session addInput:_videoInput];
         }
     } else {
-        
         return NO;
     }
     
@@ -128,12 +129,10 @@ static NSString *kCXCameraRampingVideoZoomContext;
     
     [self addZoomFactorObserver];
     
+    [self addAreaChangeMonitor];
     
     return YES;
 }
-
-
-
 
 /**
  *  启动会话
@@ -207,17 +206,14 @@ static NSString *kCXCameraRampingVideoZoomContext;
             if (_videoInput.device.position == AVCaptureDevicePositionBack) {
                 [self addZoomFactorObserver];   // 为新的添加
             }
-            
-            
-            
+
         } else {
             [_session addInput:_videoInput];
         }
     
-    // 配置完成，系统会分批整合所有变更
+        // 配置完成，系统会分批整合所有变更
         [_session commitConfiguration];
-        
-        
+
     } else {
         if ([_delegate respondsToSelector:@selector(cameraManagerConfigurateFailed:)]) {
             [_delegate cameraManagerConfigurateFailed:error];
@@ -423,8 +419,6 @@ static NSString *kCXCameraRampingVideoZoomContext;
             }
         }
     }
-    
-    
 }
 
 /**
@@ -459,6 +453,16 @@ static NSString *kCXCameraRampingVideoZoomContext;
                 [_delegate cameraManagerConfigurateFailed:error];
             }
         }
+    }
+}
+
+- (void)setAutoFocusAndExpose:(BOOL)autoFocusAndExpose
+{
+    _autoFocusAndExpose = autoFocusAndExpose;
+    AVCaptureDevice *videoDevice = self.videoInput.device;
+    if ([videoDevice lockForConfiguration:NULL]) {
+        videoDevice.subjectAreaChangeMonitoringEnabled = autoFocusAndExpose;
+        [videoDevice unlockForConfiguration];
     }
 }
 
@@ -554,6 +558,20 @@ static NSString *kCXCameraRampingVideoZoomContext;
         [_videoInput.device removeObserver:self
                                 forKeyPath:KCXCameraDeviceInputPropertyRampingVideoZoom
                                    context:&kCXCameraRampingVideoZoomContext];
+    }
+}
+
+- (void)addAreaChangeMonitor
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(deviceSubjectAreaDidChange:) name:AVCaptureDeviceSubjectAreaDidChangeNotification object:nil];
+}
+
+- (void)deviceSubjectAreaDidChange:(NSNotification *)note
+{
+    if (self.autoFocusAndExpose) {
+        if ([self.delegate respondsToSelector:@selector(captureDeviceSubjectAreaDidChange)]) {
+            [self.delegate captureDeviceSubjectAreaDidChange];
+        }
     }
 }
 
@@ -854,6 +872,7 @@ static NSString *kCXCameraRampingVideoZoomContext;
 - (void)dealloc
 {
     [self removeZoomFactorObserver];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 

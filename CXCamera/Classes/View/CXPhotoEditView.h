@@ -13,8 +13,8 @@ typedef void(^CXCameraEmployPhotoBlock)();  // 使用图片
 
 @interface CXPhotoEditView : UIView
 
-+ (instancetype)showPhotoEditViewWithPhoto:(UIImage *)photo
-                         rephotographBlock:(CXCameraRephotographBlock)rephotographBlock
-                          employPhotoBlock:(CXCameraEmployPhotoBlock)employPhotoBlock;
++ (instancetype)photoEditViewWithPhoto:(UIImage *)photo
+                     rephotographBlock:(CXCameraRephotographBlock)rephotographBlock
+                      employPhotoBlock:(CXCameraEmployPhotoBlock)employPhotoBlock;
 
 @end
