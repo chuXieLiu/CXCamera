@@ -42,20 +42,29 @@
 
 * 调用CXCameraViewController的类方法，present一个相机控制器
 
+拍照
+
+
 ```objc
-+ (instancetype)showCameraWithDelegate:(id<CXCameraViewControllerDelegate>)delegate
-                            cameraMode:(CXCameraMode)cameraMode
-                automaticWriteToLibary:(BOOL)automaticWriteToLibary;
++ (instancetype)presentPhotoCameraWithDelegate:(id<CXCameraViewControllerDelegate>)delegate
+                        automaticWriteToLibary:(BOOL)automaticWriteToLibary
+                            autoFocusAndExpose:(BOOL)autoFocusAndExpose;
 ```
 
-cameraMode 为相机功能模式，分别为
+录像
 
-	拍照模式 ： CXCameraModePhoto
-	录像模式 ： CXCameraModeVideo
+```objc
++ (instancetype)presentVideoCameraWithDelegate:(id<CXCameraViewControllerDelegate>)delegate
+                           maxRecordedDuration:(NSTimeInterval)maxRecordedDuration
+                        automaticWriteToLibary:(BOOL)automaticWriteToLibary
+                            autoFocusAndExpose:(BOOL)autoFocusAndExpose;
+```
 
 automaticWriteToLibary 为是否自动写入相册，当按下快门时会自动将捕捉的照片或音频写入相册，默认为NO，不开启。
 
-CXCameraViewControllerDelegate 定义了可遵守的协议，
+CXCameraViewControllerDelegate 定义了可遵守的协议。
+
+autoFocusAndExpose 是否自动对焦与曝光，当相机捕捉到的场景发生大范围变化，或者亮度等发生变化时，会重置对焦与曝光点。
 
 捕捉图片回调
 
