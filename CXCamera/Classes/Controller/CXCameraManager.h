@@ -212,4 +212,11 @@
 - (void)writeVideoToPhotosAlbumAtPath:(NSURL *)movieURL completionBlock:(void (^)(NSURL *assetURL, NSError *error))completionBlock;
 
 
+
+
+
+
+
+
+
 @end

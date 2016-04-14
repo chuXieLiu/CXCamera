@@ -659,14 +659,15 @@ static NSString *kCXCameraRampingVideoZoomContext;
         }
         
         self.movieOutputURL = [self uniqueMovieOutputURL];
-        self.movieOutput.maxRecordedDuration = CMTimeMake(self.maxRecordedDuration, 1);
+        if (self.maxRecordedDuration) {
+            self.movieOutput.maxRecordedDuration = CMTimeMake(self.maxRecordedDuration, 1);
+        }
         [self.movieOutput startRecordingToOutputFileURL:_movieOutputURL
                                   recordingDelegate:self];
 
     }
 
 }
-
 
 - (NSURL *)uniqueMovieOutputURL
 {
@@ -702,7 +703,6 @@ static NSString *kCXCameraRampingVideoZoomContext;
     }
 }
 
-
 /**
  * 录制时长
  */
@@ -727,6 +727,7 @@ static NSString *kCXCameraRampingVideoZoomContext;
     if (!error) {
         [self callBackEndRecordedWithError:nil];
     } else {
+        // 当到达指定的最大录制时间时，该代理会返回error
         BOOL success = [error.userInfo[AVErrorRecordingSuccessfullyFinishedKey] boolValue];
         if (success) {
             if ([self.delegate respondsToSelector:@selector(cameraManagerDidReachMaxReocrdedDuration:)]) {
@@ -800,6 +801,7 @@ static NSString *kCXCameraRampingVideoZoomContext;
     }
 }
 
+
 #pragma mark - private method
 
 - (BOOL)authorizeAssetsLibrary
@@ -820,26 +822,6 @@ static NSString *kCXCameraRampingVideoZoomContext;
         }
     }
 }
-
-
-
-- (void)generateThumbImageWithMovieURL:(NSURL *)movieURL
-{
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        AVAsset *asset = [AVAsset assetWithURL:movieURL];
-        AVAssetImageGenerator *imageGenerator = [AVAssetImageGenerator assetImageGeneratorWithAsset:asset];
-        // 自动调整视频的矩阵变化（如视频方向的变化）
-        imageGenerator.appliesPreferredTrackTransform = YES;
-        CGImageRef imageRef = [imageGenerator copyCGImageAtTime:kCMTimeZero actualTime:NULL error:nil];
-        UIImage *image = [UIImage imageWithCGImage:imageRef];
-        CGImageRelease(imageRef);
-        dispatch_async(dispatch_get_main_queue(), ^{
-            NSLog(@"%@",image);
-        });
-        
-    });
-}
-
 
 - (NSUInteger)cameraCount
 {

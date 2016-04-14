@@ -17,23 +17,13 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eAf-F7-Dac">
-                                <rect key="frame" x="270" y="214" width="60" height="44"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1iB-tK-J0I">
+                                <rect key="frame" x="310" y="531" width="60" height="44"/>
                                 <color key="backgroundColor" red="0.90196078430000004" green="0.53333333329999999" blue="0.12549019610000001" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="44" id="GqO-YF-4qe"/>
-                                    <constraint firstAttribute="width" constant="60" id="Ssx-EA-zWs"/>
+                                    <constraint firstAttribute="width" constant="60" id="JBO-tt-iT0"/>
+                                    <constraint firstAttribute="height" constant="44" id="OSr-fc-fMH"/>
                                 </constraints>
-                                <state key="normal" title="拍照">
-                                    <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
-                                </state>
-                                <connections>
-                                    <action selector="showPhotoCamera:" destination="BYZ-38-t0r" eventType="touchUpInside" id="qFZ-Xh-944"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1iB-tK-J0I">
-                                <rect key="frame" x="270" y="278" width="60" height="44"/>
-                                <color key="backgroundColor" red="0.90196078430000004" green="0.53333333329999999" blue="0.12549019610000001" alpha="1" colorSpace="calibratedRGB"/>
                                 <state key="normal" title="录像">
                                     <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
@@ -44,20 +34,43 @@
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rjg-cM-iCb">
                                 <rect key="frame" x="166" y="407" width="46" height="46"/>
                             </button>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="SIx-pW-YuH">
+                                <rect key="frame" x="25" y="35" width="550" height="471"/>
+                            </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eAf-F7-Dac">
+                                <rect key="frame" x="230" y="531" width="60" height="44"/>
+                                <color key="backgroundColor" red="0.90196078430000004" green="0.53333333329999999" blue="0.12549019610000001" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="EhG-mZ-3yt"/>
+                                    <constraint firstAttribute="width" constant="60" id="SoS-Me-2mf"/>
+                                </constraints>
+                                <state key="normal" title="拍照">
+                                    <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="showPhotoCamera:" destination="BYZ-38-t0r" eventType="touchUpInside" id="qFZ-Xh-944"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="1iB-tK-J0I" firstAttribute="top" secondItem="eAf-F7-Dac" secondAttribute="bottom" constant="20" id="C4t-hZ-71R"/>
-                            <constraint firstItem="1iB-tK-J0I" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="Iml-mb-B0l"/>
-                            <constraint firstItem="1iB-tK-J0I" firstAttribute="height" secondItem="eAf-F7-Dac" secondAttribute="height" id="NYC-6S-uG0"/>
-                            <constraint firstItem="eAf-F7-Dac" firstAttribute="centerX" secondItem="1iB-tK-J0I" secondAttribute="centerX" id="Uw7-u7-hzB"/>
-                            <constraint firstItem="1iB-tK-J0I" firstAttribute="width" secondItem="eAf-F7-Dac" secondAttribute="width" id="aS3-bk-zxi"/>
-                            <constraint firstItem="1iB-tK-J0I" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="pju-5T-i1t"/>
+                            <constraint firstItem="SIx-pW-YuH" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="25" id="7XE-uw-8VJ"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="1iB-tK-J0I" secondAttribute="bottom" constant="25" id="Gzv-Ke-e0d"/>
+                            <constraint firstItem="SIx-pW-YuH" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" constant="35" id="O8B-xA-W0D"/>
+                            <constraint firstItem="eAf-F7-Dac" firstAttribute="centerY" secondItem="1iB-tK-J0I" secondAttribute="centerY" id="WlD-sA-vCb"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="eAf-F7-Dac" secondAttribute="bottom" constant="25" id="Xjz-87-e3k"/>
+                            <constraint firstAttribute="trailing" secondItem="SIx-pW-YuH" secondAttribute="trailing" constant="25" id="cpb-re-TdK"/>
+                            <constraint firstItem="1iB-tK-J0I" firstAttribute="top" secondItem="SIx-pW-YuH" secondAttribute="bottom" constant="25" id="pcG-BI-Ytn"/>
+                            <constraint firstItem="eAf-F7-Dac" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" constant="-40" id="piM-P0-KK8"/>
+                            <constraint firstItem="1iB-tK-J0I" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" constant="40" id="qNX-Z3-d2b"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="2Fn-hc-P4d">
                         <barButtonItem key="leftBarButtonItem" title="好的" id="UnM-mT-dsd"/>
                     </navigationItem>
+                    <connections>
+                        <outlet property="imageView" destination="SIx-pW-YuH" id="6AW-Ib-ENS"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>

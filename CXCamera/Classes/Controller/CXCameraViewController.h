@@ -56,6 +56,11 @@
 - (void)cameraViewController:(CXCameraViewController *)cameraVC automaticWriteVideoToPhotosAlbumAtPath:(NSURL *)videoURL
                        error:(NSError *)error;
 
+/**
+ *  关闭相机回调
+ */
+- (void)cameraViewControllerDidDismiss:(CXCameraViewController *)cameraVC;
+
 @end
 
 
@@ -77,7 +82,7 @@
 @property (nonatomic,weak) id<CXCameraViewControllerDelegate> delegate;
 
 /**
- * 最长录制视频时间
+ * 最长录制时间，当置为0或者CGFLOAT_MAX时可以不受时间限制
  */
 @property (nonatomic,assign) NSTimeInterval maxRecordedDuration;
 
@@ -87,14 +92,32 @@
 @property (nonatomic,assign) BOOL autoFocusAndExpose;
 
 /**
- *  present一个拍照相机控制器
+ *	present一个拍照相机控制器
+ *
+ *	@param	delegate  相机代理
+ *
+ *  @param	automaticWriteToLibary	是否自动写入相册
+ *
+ *  @param	autoFocusAndExpose	当亮度或者场景变化时是否重新对焦曝光
+ *
+ *	@return	相机控制器
  */
 + (instancetype)presentPhotoCameraWithDelegate:(id<CXCameraViewControllerDelegate>)delegate
                         automaticWriteToLibary:(BOOL)automaticWriteToLibary
                             autoFocusAndExpose:(BOOL)autoFocusAndExpose;
 
 /**
- *  present一个录像相机控制器
+ *	present一个录像相机控制器
+ *
+ *	@param	delegate	相机代理
+ *
+ *  @param	maxRecordedDuration	最长录制时间，当置为0或者CGFLOAT_MAX时可以不受时间限制
+ *
+ *  @param	automaticWriteToLibary	是否自动写入相册
+ *
+ *  @param	autoFocusAndExpose	当亮度或者场景变化时是否重新对焦曝光
+ *
+ *	@return	相机控制器
  */
 + (instancetype)presentVideoCameraWithDelegate:(id<CXCameraViewControllerDelegate>)delegate
                            maxRecordedDuration:(NSTimeInterval)maxRecordedDuration

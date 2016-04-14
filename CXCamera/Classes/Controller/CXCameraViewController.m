@@ -153,6 +153,7 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
     [self stopZoomSliderTimer];
     [self.cameraManager stopSession];
     [self dismissViewControllerAnimated:YES completion:nil];
+    [self dismissCallback];
 }
 
 - (void)didSelectedFlashMode:(CXCaptureFlashMode)flashMode
@@ -273,6 +274,7 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
         } employPhotoBlock:^{
             [weakSelf callBackCaptureStillImage:image error:nil];
             [weakSelf dismissViewControllerAnimated:YES completion:nil];
+            [weakSelf dismissCallback];
         }];
         [self.view addSubview:photoEditView];
         self.photoEditView = photoEditView;
@@ -330,6 +332,7 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
             [weakSelf.overlayView setShutterEnable:YES];
             [weakSelf callBackEndRecordedVideo:fileURL error:error];
             [weakSelf dismissViewControllerAnimated:YES completion:nil];
+            [weakSelf dismissCallback];
         }];
         [self.view addSubview:videoEditView];
         self.videoEditView = videoEditView;
@@ -368,7 +371,7 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
 
 - (void)callBackEndRecordedVideo:(NSURL *)videoURL error:(NSError *)error
 {
-    if ([self.delegate respondsToSelector:@selector(cameraViewController:didEndCaptureImage:error:)]) {
+    if ([self.delegate respondsToSelector:@selector(cameraViewController:didEndCaptureVideo:error:)]) {
         [self.delegate cameraViewController:self didEndCaptureVideo:videoURL error:error];
     }
 }
@@ -465,6 +468,13 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
     NSInteger minutes = (int)(interval / 60) % 60;
     NSInteger seconds = (int)interval % 60;
     return [NSString stringWithFormat:@"%02zd:%02zd:%02zd",hours,minutes,seconds];
+}
+
+- (void)dismissCallback
+{
+    if ([self.delegate respondsToSelector:@selector(cameraViewControllerDidDismiss:)]) {
+        [self.delegate cameraViewControllerDidDismiss:self];
+    }
 }
 
 

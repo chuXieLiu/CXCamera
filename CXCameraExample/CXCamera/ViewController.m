@@ -7,9 +7,13 @@
 //
 
 #import "ViewController.h"
+#import <AVFoundation/AVFoundation.h>
 #import "CXCamera.h"
 
 @interface ViewController () <CXCameraViewControllerDelegate>
+
+@property (weak, nonatomic) IBOutlet UIImageView *imageView;
+
 
 @end
 
@@ -18,6 +22,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    self.imageView.layer.borderColor = [UIColor orangeColor].CGColor;
+    self.imageView.layer.borderWidth = 1.0f;
 }
 
 
@@ -43,6 +49,7 @@
 //    cameraVC.cameraMode = CXCameraModePhoto;
 //    cameraVC.automaticWriteToLibary = YES;
 //    [self presentViewController:cameraVC animated:YES completion:nil];
+    
     [CXCameraViewController presentPhotoCameraWithDelegate:self
                                     automaticWriteToLibary:YES
                                         autoFocusAndExpose:YES];
@@ -58,7 +65,7 @@
 //    [self presentViewController:cameraVC animated:YES completion:nil];
     
     [CXCameraViewController presentVideoCameraWithDelegate:self
-                                       maxRecordedDuration:10
+                                       maxRecordedDuration:0
                                     automaticWriteToLibary:YES
                                         autoFocusAndExpose:YES];
 
@@ -102,6 +109,7 @@
 - (void)cameraViewController:(CXCameraViewController *)cameraVC didEndCaptureImage:(UIImage *)image error:(NSError *)error
 {
     NSLog(@"didEndCaptureImage:%@,%@",image,error);
+    self.imageView.image = image;
 }
 
 /**
@@ -110,8 +118,19 @@
 - (void)cameraViewController:(CXCameraViewController *)cameraVC didEndCaptureVideo:(NSURL *)videoURL error:(NSError *)error
 {
     NSLog(@"didEndCaptureVideo:%@,%@",videoURL,error);
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        AVAsset *asset = [AVAsset assetWithURL:videoURL];
+        AVAssetImageGenerator *imageGenerator = [AVAssetImageGenerator assetImageGeneratorWithAsset:asset];
+        imageGenerator.appliesPreferredTrackTransform = YES;
+        CGImageRef imageRef = [imageGenerator copyCGImageAtTime:kCMTimeZero actualTime:NULL error:nil];
+        UIImage *image = [UIImage imageWithCGImage:imageRef];
+        CGImageRelease(imageRef);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.imageView.image = image;
+        });
+        
+    });
 }
-
 
 
 /**
@@ -130,7 +149,13 @@
     NSLog(@"automaticWriteVideoToPhotosAlbumAtPath:%@,%@",videoURL,error);
 }
 
-
+/**
+ *  关闭相机回调
+ */
+- (void)cameraViewControllerDidDismiss:(CXCameraViewController *)cameraVC
+{
+    NSLog(@"cameraViewControllerDidDismiss");
+}
 
 
 
