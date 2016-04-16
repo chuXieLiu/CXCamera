@@ -47,13 +47,13 @@
 /**
  *  自动保存图片回调
  */
-- (void)cameraViewController:(CXCameraViewController *)cameraVC automaticWriteImageToPhotosAlbum:(UIImage *)image
+- (void)cameraViewController:(CXCameraViewController *)cameraVC finishWriteImageToPhotosAlbum:(UIImage *)image
                        error:(NSError *)error;
 
 /**
  *  自动保存视频回调
  */
-- (void)cameraViewController:(CXCameraViewController *)cameraVC automaticWriteVideoToPhotosAlbumAtPath:(NSURL *)videoURL
+- (void)cameraViewController:(CXCameraViewController *)cameraVC finishWriteVideoToPhotosAlbumAtPath:(NSURL *)videoURL
                        error:(NSError *)error;
 
 /**
@@ -67,29 +67,30 @@
 @interface CXCameraViewController : UIViewController
 
 /**
- *  相机类型 CXCameraModePhoto;CXCameraModeVideo
- */
-@property (nonatomic,assign) CXCameraMode cameraMode;
-
-/**
- *  是否自动写入相册 , 默认为NO
- */
-@property (nonatomic,assign) BOOL automaticWriteToLibary;
-
-/**
  * 相机代理
  */
-@property (nonatomic,weak) id<CXCameraViewControllerDelegate> delegate;
+@property (nonatomic,weak,readwrite) id<CXCameraViewControllerDelegate> delegate;
+
+/**
+ *  相机类型 CXCameraModePhoto;CXCameraModeVideo
+ */
+@property (nonatomic,assign,readwrite) CXCameraMode cameraMode;
 
 /**
  * 最长录制时间，当置为0或者CGFLOAT_MAX时可以不受时间限制
  */
-@property (nonatomic,assign) NSTimeInterval maxRecordedDuration;
+@property (nonatomic,assign,readwrite) NSTimeInterval maxRecordedDuration;
 
 /**
- * 当设备检测到亮度变化（lighting lighting）或大范围活动（substantial movement）时， 会重新以中心点开始自动连续对焦与曝光
+ *  是否自动写入相册 , 默认为NO
  */
-@property (nonatomic,assign) BOOL autoFocusAndExpose;
+@property (nonatomic,assign,readwrite,getter=isAutomaticWriteToLibary) BOOL automaticWriteToLibary;
+
+/**
+ * 当设备检测到亮度变化（lighting lighting）或大范围活动（substantial movement）时， 会重新以中心点开始自动连续对焦与曝光,默认为NO
+ */
+@property (nonatomic,assign,readwrite,getter=isAutoFocusAndExpose) BOOL autoFocusAndExpose;
+
 
 /**
  *	present一个拍照相机控制器

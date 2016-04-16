@@ -124,6 +124,7 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
 {
     if (self.cameraMode == CXCameraModePhoto) {
         [self.cameraManager captureStillImage];
+        [overlayView setShutterEnable:NO];
     } else {
         if ([self.overlayView prepareToRecording]) {
             dispatch_async(dispatch_get_global_queue(0, 0), ^{
@@ -271,10 +272,12 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
         __weak typeof(self) weakSelf = self;
         CXPhotoEditView *photoEditView = [CXPhotoEditView photoEditViewWithPhoto:image rephotographBlock:^{
             [weakSelf.photoEditView removeFromSuperview];
+            [weakSelf.overlayView setShutterEnable:YES];
         } employPhotoBlock:^{
             [weakSelf callBackCaptureStillImage:image error:nil];
             [weakSelf dismissViewControllerAnimated:YES completion:nil];
             [weakSelf dismissCallback];
+            [weakSelf.overlayView setShutterEnable:YES];
         }];
         [self.view addSubview:photoEditView];
         self.photoEditView = photoEditView;
@@ -283,6 +286,7 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
     } else {
         [self callBackCaptureStillImage:nil error:error];
     }
+    
 }
 
 - (void)writeToLibaryWithImage:(UIImage *)image
@@ -291,8 +295,8 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
         if ([self checkAccessForPhotosAlbum]) {
             [self.cameraManager writeImageToPhotosAlbum:image
             completionBlock:^(NSURL *assetURL, NSError *error) {
-                if ([self.delegate respondsToSelector:@selector(cameraViewController:automaticWriteImageToPhotosAlbum:error:)]) {
-                    [self.delegate cameraViewController:self automaticWriteImageToPhotosAlbum:image error:error];
+                if ([self.delegate respondsToSelector:@selector(cameraViewController:finishWriteImageToPhotosAlbum:error:)]) {
+                    [self.delegate cameraViewController:self finishWriteImageToPhotosAlbum:image error:error];
                 }
             }];
         }
@@ -349,8 +353,8 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
         if ([self checkAccessForPhotosAlbum]) {
             [self.cameraManager writeVideoToPhotosAlbumAtPath:videoURL
               completionBlock:^(NSURL *assetURL, NSError *error) {
-                  if ([self.delegate respondsToSelector:@selector(cameraViewController:automaticWriteVideoToPhotosAlbumAtPath:error:)]) {
-                      [self.delegate cameraViewController:self automaticWriteVideoToPhotosAlbumAtPath:videoURL error:error];
+                  if ([self.delegate respondsToSelector:@selector(cameraViewController:finishWriteVideoToPhotosAlbumAtPath:error:)]) {
+                      [self.delegate cameraViewController:self finishWriteVideoToPhotosAlbumAtPath:videoURL error:error];
                   }
               }];
         }

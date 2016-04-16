@@ -132,11 +132,10 @@
     });
 }
 
-
 /**
  *  自动保存图片回调
  */
-- (void)cameraViewController:(CXCameraViewController *)cameraVC automaticWriteImageToPhotosAlbum:(UIImage *)image error:(NSError *)error
+- (void)cameraViewController:(CXCameraViewController *)cameraVC finishWriteImageToPhotosAlbum:(UIImage *)image error:(NSError *)error
 {
     NSLog(@"automaticWriteImageToPhotosAlbum:%@,%@",image,error);
 }
@@ -144,7 +143,7 @@
 /**
  *  自动保存视频回调
  */
-- (void)cameraViewController:(CXCameraViewController *)cameraVC automaticWriteVideoToPhotosAlbumAtPath:(NSURL *)videoURL error:(NSError *)error
+- (void)cameraViewController:(CXCameraViewController *)cameraVC finishWriteVideoToPhotosAlbumAtPath:(NSURL *)videoURL error:(NSError *)error
 {
     NSLog(@"automaticWriteVideoToPhotosAlbumAtPath:%@,%@",videoURL,error);
 }

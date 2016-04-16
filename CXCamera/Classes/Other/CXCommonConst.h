@@ -41,12 +41,9 @@ typedef enum : NSUInteger {
 
 
 
-
-
 UIKIT_EXTERN CGFloat const kCXOverlayStatusViewheight;
 
 UIKIT_EXTERN CGFloat const kCXOverlayModeViewHeight;
-
 
 
 
