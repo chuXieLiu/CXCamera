@@ -28,19 +28,29 @@ static const CGFloat kCXCameraRecordingTimeInterval = 0.5f;
     CXOverLayViewDelegate
 >
 
+@property (nonatomic,weak,readwrite) id<CXCameraViewControllerDelegate> delegate;
+
+@property (nonatomic,assign,readwrite) CXCameraMode cameraMode;
+
+@property (nonatomic,assign,readwrite) NSTimeInterval maxRecordedDuration;
+
+@property (nonatomic,assign,readwrite,getter=isAutomaticWriteToLibary) BOOL automaticWriteToLibary;
+
+@property (nonatomic,assign,readwrite,getter=isAutoFocusAndExpose) BOOL autoFocusAndExpose;
+
 @property (nonatomic,strong) CXCameraManager *cameraManager;
 
 @property (nonatomic,weak) CXPreviewView *previewView;
 
 @property (nonatomic,weak) CXOverlayView *overlayView;
 
-@property (nonatomic,strong) NSTimer *zoomSliderTimer;
-
-@property (nonatomic,strong) NSTimer *recordingTimer;
-
 @property (nonatomic,weak) CXPhotoEditView *photoEditView;
 
 @property (nonatomic,weak) CXVideoEditView *videoEditView;
+
+@property (nonatomic,strong) NSTimer *zoomSliderTimer;
+
+@property (nonatomic,strong) NSTimer *recordingTimer;
 
 @property (nonatomic,assign) BOOL lastAutoFocusAndExpose;
 

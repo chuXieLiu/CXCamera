@@ -39,41 +39,23 @@
 
 - (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation
 {
-    
     return UIInterfaceOrientationPortrait;
 }
 
-- (IBAction)showPhotoCamera:(id)sender {
-    
-//    CXCameraViewController *cameraVC = [[CXCameraViewController alloc] init];
-//    cameraVC.cameraMode = CXCameraModePhoto;
-//    cameraVC.automaticWriteToLibary = YES;
-//    [self presentViewController:cameraVC animated:YES completion:nil];
-    
+- (IBAction)showPhotoCamera:(id)sender
+{
     [CXCameraViewController presentPhotoCameraWithDelegate:self
                                     automaticWriteToLibary:YES
                                         autoFocusAndExpose:YES];
-    
 }
 
-- (IBAction)showVideoCamera:(id)sender {
-    
-//    CXCameraViewController *cameraVC = [[CXCameraViewController alloc] init];
-//    cameraVC.cameraMode = CXCameraModeVideo;
-//    cameraVC.automaticWriteToLibary = YES;
-//    cameraVC.maxRecordedDuration = 5;
-//    [self presentViewController:cameraVC animated:YES completion:nil];
-    
+- (IBAction)showVideoCamera:(id)sender
+{
     [CXCameraViewController presentVideoCameraWithDelegate:self
                                        maxRecordedDuration:0
                                     automaticWriteToLibary:YES
                                         autoFocusAndExpose:YES];
-
 }
-
-
-
-
 
 #pragma mark - CXCameraViewControllerDelegate
 
